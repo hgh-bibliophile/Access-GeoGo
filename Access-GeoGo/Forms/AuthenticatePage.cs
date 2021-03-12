@@ -80,7 +80,15 @@ namespace Access_GeoGo.Forms
             }
             return base.ProcessDialogKey(keyData);
         }
-
+        /*Checks to see if required fields have been edited.*/
+        private void Username_Input_TextChanged(object sender, EventArgs e)
+        {
+            EnableAuthenticateButton();
+        }
+        private void Password_Input_TextChanged(object sender, EventArgs e)
+        {
+            EnableAuthenticateButton();
+        }
     }
     
 

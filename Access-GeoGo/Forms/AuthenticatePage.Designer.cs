@@ -46,6 +46,7 @@
             this.Username_Input.Name = "Username_Input";
             this.Username_Input.Size = new System.Drawing.Size(212, 21);
             this.Username_Input.TabIndex = 6;
+            this.Username_Input.TextChanged += new System.EventHandler(this.Username_Input_TextChanged);
             // 
             // Username_Label
             // 
@@ -74,6 +75,7 @@
             this.Password_Input.Size = new System.Drawing.Size(212, 21);
             this.Password_Input.TabIndex = 8;
             this.Password_Input.UseSystemPasswordChar = true;
+            this.Password_Input.TextChanged += new System.EventHandler(this.Password_Input_TextChanged);
             // 
             // Database_Label
             // 
@@ -91,6 +93,7 @@
             this.Database_Input.ShortcutsEnabled = false;
             this.Database_Input.Size = new System.Drawing.Size(212, 21);
             this.Database_Input.TabIndex = 10;
+            this.Database_Input.TextChanged += new System.EventHandler(this.Database_Input_TextChanged);
             // 
             // AuthenticateButton
             // 
