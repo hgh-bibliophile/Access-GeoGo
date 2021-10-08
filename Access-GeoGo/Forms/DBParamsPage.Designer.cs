@@ -69,7 +69,7 @@ namespace Access_GeoGo.Forms
             // 
             // FindDBButton
             // 
-            this.FindDBButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.FindDBButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.FindDBButton.Location = new System.Drawing.Point(265, 12);
             this.FindDBButton.Name = "FindDBButton";
             this.FindDBButton.Size = new System.Drawing.Size(67, 22);
@@ -80,7 +80,6 @@ namespace Access_GeoGo.Forms
             // 
             // DatabaseLabel
             // 
-            this.DatabaseLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.DatabaseLabel.Location = new System.Drawing.Point(12, 13);
             this.DatabaseLabel.Name = "DatabaseLabel";
             this.DatabaseLabel.Size = new System.Drawing.Size(103, 20);
@@ -90,7 +89,6 @@ namespace Access_GeoGo.Forms
             // 
             // DBTableLabel
             // 
-            this.DBTableLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.DBTableLabel.Location = new System.Drawing.Point(12, 39);
             this.DBTableLabel.Name = "DBTableLabel";
             this.DBTableLabel.Size = new System.Drawing.Size(103, 20);
@@ -100,7 +98,6 @@ namespace Access_GeoGo.Forms
             // 
             // IndexColumnLabel
             // 
-            this.IndexColumnLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.IndexColumnLabel.Location = new System.Drawing.Point(12, 65);
             this.IndexColumnLabel.Name = "IndexColumnLabel";
             this.IndexColumnLabel.Size = new System.Drawing.Size(103, 20);
@@ -110,7 +107,8 @@ namespace Access_GeoGo.Forms
             // 
             // TableComboBox
             // 
-            this.TableComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.TableComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TableComboBox.FormattingEnabled = true;
             this.TableComboBox.Location = new System.Drawing.Point(121, 38);
@@ -122,7 +120,8 @@ namespace Access_GeoGo.Forms
             // 
             // IndexComboBox
             // 
-            this.IndexComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.IndexComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.IndexComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.IndexComboBox.FormattingEnabled = true;
             this.IndexComboBox.Location = new System.Drawing.Point(121, 64);
@@ -133,7 +132,8 @@ namespace Access_GeoGo.Forms
             // 
             // OdometerComboBox
             // 
-            this.OdometerComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.OdometerComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.OdometerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.OdometerComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.OdometerComboBox.FormattingEnabled = true;
@@ -145,7 +145,6 @@ namespace Access_GeoGo.Forms
             // 
             // OdometerColumnLabel
             // 
-            this.OdometerColumnLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.OdometerColumnLabel.Location = new System.Drawing.Point(12, 146);
             this.OdometerColumnLabel.Name = "OdometerColumnLabel";
             this.OdometerColumnLabel.Size = new System.Drawing.Size(103, 20);
@@ -155,7 +154,8 @@ namespace Access_GeoGo.Forms
             // 
             // VehicleComboBox
             // 
-            this.VehicleComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.VehicleComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.VehicleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.VehicleComboBox.FormattingEnabled = true;
             this.VehicleComboBox.Location = new System.Drawing.Point(121, 118);
@@ -166,7 +166,6 @@ namespace Access_GeoGo.Forms
             // 
             // VehicleColumnLabel
             // 
-            this.VehicleColumnLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.VehicleColumnLabel.Location = new System.Drawing.Point(12, 119);
             this.VehicleColumnLabel.Name = "VehicleColumnLabel";
             this.VehicleColumnLabel.Size = new System.Drawing.Size(103, 20);
@@ -176,7 +175,8 @@ namespace Access_GeoGo.Forms
             // 
             // TimeComboBox
             // 
-            this.TimeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.TimeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TimeComboBox.FormattingEnabled = true;
             this.TimeComboBox.Location = new System.Drawing.Point(121, 91);
@@ -187,7 +187,6 @@ namespace Access_GeoGo.Forms
             // 
             // TimestampColumnLabel
             // 
-            this.TimestampColumnLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.TimestampColumnLabel.Location = new System.Drawing.Point(12, 92);
             this.TimestampColumnLabel.Name = "TimestampColumnLabel";
             this.TimestampColumnLabel.Size = new System.Drawing.Size(103, 20);
@@ -209,7 +208,6 @@ namespace Access_GeoGo.Forms
             // 
             // LimitEntriesBox
             // 
-            this.LimitEntriesBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.LimitEntriesBox.Increment = new decimal(new int[] {
             50,
             0,
@@ -237,7 +235,6 @@ namespace Access_GeoGo.Forms
             // 
             // NumEntriesLabel
             // 
-            this.NumEntriesLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.NumEntriesLabel.Location = new System.Drawing.Point(12, 170);
             this.NumEntriesLabel.Name = "NumEntriesLabel";
             this.NumEntriesLabel.Size = new System.Drawing.Size(103, 20);
@@ -247,7 +244,6 @@ namespace Access_GeoGo.Forms
             // 
             // MaxEntriesLabel
             // 
-            this.MaxEntriesLabel.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.MaxEntriesLabel.Location = new System.Drawing.Point(175, 170);
             this.MaxEntriesLabel.Name = "MaxEntriesLabel";
             this.MaxEntriesLabel.Size = new System.Drawing.Size(157, 20);
@@ -277,7 +273,8 @@ namespace Access_GeoGo.Forms
             // 
             // DBFileNameBox
             // 
-            this.DBFileNameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.DBFileNameBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.DBFileNameBox.Location = new System.Drawing.Point(121, 13);
             this.DBFileNameBox.Name = "DBFileNameBox";
             this.DBFileNameBox.Size = new System.Drawing.Size(138, 20);
@@ -285,9 +282,10 @@ namespace Access_GeoGo.Forms
             // 
             // ClearBtn
             // 
-            this.ClearBtn.Location = new System.Drawing.Point(266, 36);
+            this.ClearBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ClearBtn.Location = new System.Drawing.Point(265, 36);
             this.ClearBtn.Name = "ClearBtn";
-            this.ClearBtn.Size = new System.Drawing.Size(66, 23);
+            this.ClearBtn.Size = new System.Drawing.Size(67, 22);
             this.ClearBtn.TabIndex = 20;
             this.ClearBtn.Text = "Clear Odometer";
             this.ClearBtn.UseVisualStyleBackColor = true;

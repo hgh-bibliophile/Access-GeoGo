@@ -93,7 +93,6 @@
             this.Database_Input.ShortcutsEnabled = false;
             this.Database_Input.Size = new System.Drawing.Size(212, 21);
             this.Database_Input.TabIndex = 10;
-            this.Database_Input.TextChanged += new System.EventHandler(this.Database_Input_TextChanged);
             // 
             // AuthenticateButton
             // 
