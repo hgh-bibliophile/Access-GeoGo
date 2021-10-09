@@ -153,7 +153,7 @@
             this.Text = "Results";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GeoGoPage_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.GeoGoPage_FormClosed);
-            this.Load += new System.EventHandler(this.GeoGoResultsPage_Load);
+            this.Load += new System.EventHandler(this.FuelTransPage_Load);
             ((System.ComponentModel.ISupportInitialize)(this.GeoGoDataView)).EndInit();
             this.GeoGoDataPanel.ResumeLayout(false);
             this.QueryStatusBar.ResumeLayout(false);

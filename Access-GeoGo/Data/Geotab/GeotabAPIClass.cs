@@ -123,11 +123,19 @@ namespace Access_GeoGo.Data.Geotab
             public List<TType> GetResults()
             {
                 List<TType> TResultList = new List<TType> { };
+                List<Device> dt = new List<Device> { };
+                dt.Add(null);
                 if (!(ResultsList is null))
                 {
                     foreach (List<TType> TResults in ResultsList)
-                    {
-                        TResultList.Add(TResults[0]);
+                    {   
+                        if (TResults.Count >= 1)
+                        {
+                            TResultList.Add(TResults[0]);
+                        } else
+                        {
+                            TResultList.Add(default(TType));
+                        }
                     }
                 }
                 return TResultList;

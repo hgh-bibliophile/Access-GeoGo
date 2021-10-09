@@ -15,12 +15,14 @@ namespace Access_GeoGo.Forms
         static string db;
         public FuelTransPage(DBParamsPage dbp)
         {
-        
             DBP = dbp;
             db = DBP.File;
             InitializeComponent();
         }
-        private async void GeoGoResultsPage_Load(object sender, EventArgs e)
+        /// <summary>
+        /// On load, run the GeoTab query
+        /// </summary>
+        private async void FuelTransPage_Load(object sender, EventArgs e)
         {
             await ExecuteQuery();
         }

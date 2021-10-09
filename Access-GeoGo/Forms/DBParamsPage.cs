@@ -54,10 +54,14 @@ namespace Access_GeoGo.Forms
             TimeComboBox.Items.Clear();
             VehicleComboBox.Items.Clear();
             OdometerComboBox.Items.Clear();
+            LocationComboBox.Items.Clear();
+            DriverComboBox.Items.Clear();
             IndexComboBox.Text = null;
             TimeComboBox.Text = null;
             VehicleComboBox.Text = null;
             OdometerComboBox.Text = null;
+            LocationComboBox.Text = null;
+            DriverComboBox.Text = null;
         }
         private void TableComboBox_SelectionChangeCommitted(object sender, EventArgs e)
         {
@@ -75,10 +79,13 @@ namespace Access_GeoGo.Forms
 
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        IndexComboBox.Items.Add(dt.Rows[i][3].ToString());
-                        TimeComboBox.Items.Add(dt.Rows[i][3].ToString());
-                        VehicleComboBox.Items.Add(dt.Rows[i][3].ToString());
-                        OdometerComboBox.Items.Add(dt.Rows[i][3].ToString());
+                        string columnName = dt.Rows[i][3].ToString();
+                        IndexComboBox.Items.Add(columnName);
+                        TimeComboBox.Items.Add(columnName);
+                        VehicleComboBox.Items.Add(columnName);
+                        OdometerComboBox.Items.Add(columnName);
+                        LocationComboBox.Items.Add(columnName);
+                        DriverComboBox.Items.Add(columnName);
                     }
                 }
                 catch (Exception err)
@@ -94,6 +101,8 @@ namespace Access_GeoGo.Forms
         public string Time = "TxTimestamp";
         public string Vehicle = "Vehicle";
         public string Odometer = "Odometer";
+        public string GPSLocation = "Location";
+        public string Driver = "Driver";
         private void DoneButton_Click(object sender, EventArgs e)
         {
             File = DBFileNameBox.Text;
@@ -103,19 +112,26 @@ namespace Access_GeoGo.Forms
             Time = string.IsNullOrEmpty(TimeComboBox.Text) ? "TxTimestamp" : TimeComboBox.Text;
             Vehicle = string.IsNullOrEmpty(VehicleComboBox.Text) ? "Vehicle" : VehicleComboBox.Text;
             Odometer = string.IsNullOrEmpty(OdometerComboBox.Text) ? "Odometer" : OdometerComboBox.Text;
-            var selectionOK = MessageBox.Show($"Table: {Table}\nId: {Id}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}", "Verify Selections", MessageBoxButtons.OKCancel);
+            GPSLocation = string.IsNullOrEmpty(LocationComboBox.Text) ? "Location" : LocationComboBox.Text;
+            Driver = string.IsNullOrEmpty(DriverComboBox.Text) ? "Driver" : DriverComboBox.Text;
+            var selectionOK = MessageBox.Show($"Table: {Table}\nId: {Id}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nLocation: {GPSLocation}\nDriver: {Driver}", "Verify Selections", MessageBoxButtons.OKCancel);
             if (!Program.CheckAuth()) return;
             if (selectionOK == DialogResult.Cancel) return;
             var results = new FuelTransPage(this);
             results.Show();
         }
+        /// <summary>
+        /// FOR TESTING PURPOSES: resets/clears all data from the selected Odometer, Location, and Driver fields
+        /// </summary>
         private void ClearBtn_Click(object sender, EventArgs e)
         {
             Table = string.IsNullOrEmpty(TableComboBox.Text) ? "Transaction" : TableComboBox.Text;
             Odometer = string.IsNullOrEmpty(OdometerComboBox.Text) ? "Odometer" : OdometerComboBox.Text;
+            GPSLocation = string.IsNullOrEmpty(LocationComboBox.Text) ? "Location" : LocationComboBox.Text;
+            Driver = string.IsNullOrEmpty(DriverComboBox.Text) ? "Driver" : DriverComboBox.Text;
             db = DBFileNameBox.Text = FindDBDialog.FileName;
             constr = @"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + db + "; Persist Security Info = False";
-            string query = $"UPDATE [{Table}] SET [{Odometer}] = '0';";
+            string query = $"UPDATE [{Table}] SET [{Odometer}] = '0', [{GPSLocation}] = '', [{Driver}] = '';";
             con = new OleDbConnection(constr);
             using (OleDbCommand cmd = new OleDbCommand(query, con))
             {

@@ -52,6 +52,7 @@ namespace Access_GeoGo.Data
         public StatusData DeviceMileage { get; set; }
         public StatusData DeviceEngineHours { get; set; }
         public LogRecord DeviceLocation { get; set; }
+        public string Driver { get; set; }
     }
     class GeoGo_Entry
     {
@@ -87,6 +88,10 @@ namespace Access_GeoGo.Data
         /// The location string with <see cref="Latitude"/> and <see cref="Longitude"/>
         /// </summary>
         public readonly string Location;
+        /// <summary>
+        /// The current driver of the device at the date/timestamp of the entry
+        /// </summary>
+        public readonly string Driver;
         public GeoGo_Entry(GeoGo_EntryData data)
         {
             EntryID = data.Entry.Id;
@@ -95,6 +100,7 @@ namespace Access_GeoGo.Data
             Latitude = data.DeviceLocation.Latitude.ToString();
             Longitude = data.DeviceLocation.Longitude.ToString();
             Location = $"{Latitude}, {Longitude}";
+            Driver = data.Driver;
             //Miles = data.DeviceMileage.Data.ToString();
             // Hours = data.DeviceEngineHours.Data.ToString();
             

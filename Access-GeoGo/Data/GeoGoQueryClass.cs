@@ -28,9 +28,12 @@ namespace Access_GeoGo.Data
         private GeotabAPI.MultiCallList<StatusData> odometerCalls;
         private GeotabAPI.MultiCallList<StatusData> engineHoursCalls;
         private GeotabAPI.MultiCallList<LogRecord> locationCalls;
+        private GeotabAPI.MultiCallList<DriverChange> driverCalls;
 
         static Dictionary<Id, Device> _deviceCache;
         static Dictionary<string, Id> _deviceNameCache;
+        static Dictionary<Id, User> _driverCache;
+        static Dictionary<string, Id> _driverNameCache;
 
         static List<DeviceEntry> DeviceEntriesList;
         static List<DBEntry> DeviceErrorList;
@@ -78,8 +81,11 @@ namespace Access_GeoGo.Data
                 odometerCalls = null;
                 engineHoursCalls = null;
                 locationCalls = null;
+                driverCalls = null;
                 _deviceCache = null;
                 _deviceNameCache = null;
+                _driverCache = null;
+                _driverNameCache = null;
                 DeviceEntriesList = null;
                 DeviceErrorList = null;
                 GeoGoEntries = null;
@@ -103,8 +109,9 @@ namespace Access_GeoGo.Data
             {
                 var prep = PrepUIPage();
                 var devCache = GetDeviceCache();
+                var drvrCache = GetDriverCache();
                 var getDB = GetDBEntries();
-                await Task.WhenAll(prep, devCache, getDB);
+                await Task.WhenAll(prep, devCache, drvrCache, getDB);
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 await GetDeviceEntryList();
@@ -168,6 +175,12 @@ namespace Access_GeoGo.Data
             _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
             await UpdateProgress(40);
         }
+        public async Task GetDriverCache()
+        {
+            _driverCache = await GeotabAPI.GetDictionary<User, Id>(d => d.Id);
+            _driverNameCache = _driverCache.ToDictionary(d => d.Value.Name, d => d.Key);
+            await UpdateProgress(40);
+        }
         public async Task GetDBEntries()
         {
             CT.ThrowIfCancellationRequested();
@@ -225,6 +238,7 @@ namespace Access_GeoGo.Data
             odometerCalls = new GeotabAPI.MultiCallList<StatusData>();
             engineHoursCalls = new GeotabAPI.MultiCallList<StatusData>();
             locationCalls = new GeotabAPI.MultiCallList<LogRecord>();
+            driverCalls = new GeotabAPI.MultiCallList<DriverChange>();
             foreach (DeviceEntry deviceEntry in DeviceEntriesList)
             {
                 Device device = deviceEntry.Device;
@@ -252,6 +266,17 @@ namespace Access_GeoGo.Data
                             Id = device.Id
                         }
                     } });
+                driverCalls.AddCall("Get", new { search = new DriverChangeSearch
+                    {
+                        FromDate = entry.Timestamp,
+                        ToDate = entry.Timestamp,
+                        DeviceSearch = new DeviceSearch
+                        {
+                            Id = device.Id
+                        },
+                        IncludeOverlappedChanges = true
+                    } });
+
             }
             await UpdateProgress(50);
             return;
@@ -260,7 +285,7 @@ namespace Access_GeoGo.Data
         {
             try
             {
-                await Task.WhenAll(odometerCalls.MakeCall(), engineHoursCalls.MakeCall(), locationCalls.MakeCall());
+                await Task.WhenAll(odometerCalls.MakeCall(), engineHoursCalls.MakeCall(), locationCalls.MakeCall(), driverCalls.MakeCall());
             }
             catch (OperationCanceledException)
             {
@@ -270,6 +295,7 @@ namespace Access_GeoGo.Data
             var oCallResults = odometerCalls.GetResults();
             var eHoursCallResults = engineHoursCalls.GetResults();
             var lCallResults = locationCalls.GetResults();
+            var dCallResults = driverCalls.GetResults();
             await UpdateProgress(75);
 
             GeoGoEntries = new List<GeoGo_Entry> { };
@@ -278,6 +304,7 @@ namespace Access_GeoGo.Data
                 StatusData odometer = oCallResults[i];
                 StatusData engineHours = eHoursCallResults[i];
                 LogRecord location = lCallResults[i];
+                string driver = (dCallResults[i] != null) && _driverCache.TryGetValue(dCallResults[i].GetDriverId(), out User user) ? user.Name : "Unknown Driver";
                 Device device = DeviceEntriesList[i].Device;
                 DBEntry entry = DeviceEntriesList[i].Entry;
                 GeoGo_EntryData GeoGoData = new GeoGo_EntryData
@@ -286,6 +313,7 @@ namespace Access_GeoGo.Data
                     DeviceEngineHours = engineHours,
                     DeviceMileage = odometer,
                     DeviceLocation = location,
+                    Driver = driver,
                     Entry = entry
                 };
                 GeoGoEntries.Add(new GeoGo_Entry(GeoGoData));
@@ -303,6 +331,7 @@ namespace Access_GeoGo.Data
             dt.Columns.Add("Odometer");
             dt.Columns.Add("Engine Hours");
             dt.Columns.Add("Location");
+            dt.Columns.Add("Driver");
             foreach (GeoGo_Entry GeoGo in GeoGoEntries)
             {
                 DataRow dr = dt.NewRow();
@@ -312,6 +341,7 @@ namespace Access_GeoGo.Data
                 dr[3] = GeoGo.Miles;
                 dr[4] = GeoGo.Hours;
                 dr[5] = GeoGo.Location;
+                dr[6] = GeoGo.Driver;
                 dt.Rows.Add(dr);
             }
             foreach (DBEntry dbe in DeviceErrorList)
@@ -323,6 +353,7 @@ namespace Access_GeoGo.Data
                 dr[3] = -3;
                 dr[4] = 0;
                 dr[5] = 0;
+                dr[6] = "";
                 dt.Rows.Add(dr);
             }
             GeoGoTable = dt;
