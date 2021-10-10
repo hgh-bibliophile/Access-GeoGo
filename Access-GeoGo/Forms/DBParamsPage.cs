@@ -1,7 +1,7 @@
 ﻿using Access_GeoGo.Data.Configuration;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
@@ -13,22 +13,67 @@ namespace Access_GeoGo.Forms
         public DBParamsPage()
         {
             InitializeComponent();
-            DBFileNameBox.Text = Program.GeoGoCONFIG.Databases[Program.GeoGoCONFIG.Databases.CurrentUser].File;
+            db = DBFileNameBox.Text = Program.CONFIG.UserConfig.Database;
+            columnComboBoxes = new Dictionary<ComboBox,string>{
+                { IndexComboBox, dbConfig.Columns.Id },
+                { TimeComboBox, dbConfig.Columns.Time },
+                { VehicleComboBox, dbConfig.Columns.Vehicle },
+                { OdometerComboBox, dbConfig.Columns.Odometer },
+                { EngineHrsComboBox, dbConfig.Columns.EngineHrs },
+                { LatitudeComboBox, dbConfig.Columns.Latitude },
+                { LongitudeComboBox, dbConfig.Columns.Longitude },
+                { DriverComboBox, dbConfig.Columns.Driver }
+            };
+            LoadTables(db);
+            EnableControls();
+            if (Program.CONFIG.UserConfig.Name != "Hannah") ClearBtn.Enabled = false;
         }
         static string db;
         static string constr;
         static OleDbConnection con;
-        private void FindDBButton_Click(object sender, EventArgs e)
+        private readonly GeoGo_UserConfig.DBConfig dbConfig = Program.CONFIG.UserConfig.DB_Config;
+        private Dictionary<ComboBox, string> columnComboBoxes;
+        private void EnableControls()
         {
-            FindDBDialog.ShowDialog();
+            DoneBtn.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text) 
+                && !string.IsNullOrWhiteSpace(TableComboBox.Text) 
+                && !string.IsNullOrWhiteSpace(IndexComboBox.Text)
+                && !string.IsNullOrWhiteSpace(TimeComboBox.Text)
+                && !string.IsNullOrWhiteSpace(VehicleComboBox.Text)
+                && !string.IsNullOrWhiteSpace(OdometerComboBox.Text)
+                && !string.IsNullOrWhiteSpace(EngineHrsComboBox.Text)
+                && !string.IsNullOrWhiteSpace(LatitudeComboBox.Text)
+                && !string.IsNullOrWhiteSpace(LongitudeComboBox.Text)
+                && !string.IsNullOrWhiteSpace(DriverComboBox.Text);
+            ClearBtn.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text)
+                && !string.IsNullOrWhiteSpace(TableComboBox.Text) 
+                && (!string.IsNullOrWhiteSpace(OdometerComboBox.Text)
+                | !string.IsNullOrWhiteSpace(EngineHrsComboBox.Text)
+                | !string.IsNullOrWhiteSpace(LatitudeComboBox.Text)
+                | !string.IsNullOrWhiteSpace(LongitudeComboBox.Text)
+                | !string.IsNullOrWhiteSpace(DriverComboBox.Text));
+            TableComboBox.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text);
+            foreach (ComboBox cBox in columnComboBoxes.Keys) cBox.Enabled = !string.IsNullOrWhiteSpace(TableComboBox.Text);
         }
-        private void FindDBDialog_FileOk(object sender, CancelEventArgs e)
+        private void ClearSelection()
         {
-            ClearSelection();
-            TableComboBox.Items.Clear();
-            TableComboBox.Text = null;
-
-            db = DBFileNameBox.Text = FindDBDialog.FileName;
+            foreach (ComboBox cBox in columnComboBoxes.Keys)
+            {
+                cBox.Items.Clear();
+                cBox.Text = null;
+            }
+            EnableControls();
+        }
+        private void SetDefaultColumns()
+        {
+            foreach (KeyValuePair<ComboBox, string> column in columnComboBoxes)
+            {
+                column.Key.SelectedIndex = column.Key.FindStringExact(column.Value);
+            }
+        }
+        private void LoadTables(string db)
+        {
+            if (db == null) return;
             constr = @"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + db + "; Persist Security Info = False";
             con = new OleDbConnection(constr);
             using (con)
@@ -47,25 +92,11 @@ namespace Access_GeoGo.Forms
                     Program.ShowError(err);
                 }
             }
+            TableComboBox.SelectedIndex = TableComboBox.FindStringExact(dbConfig.Table);
+            EnableControls();
         }
-        private void ClearSelection()
-        {            
-            IndexComboBox.Items.Clear();
-            TimeComboBox.Items.Clear();
-            VehicleComboBox.Items.Clear();
-            OdometerComboBox.Items.Clear();
-            LocationComboBox.Items.Clear();
-            DriverComboBox.Items.Clear();
-            IndexComboBox.Text = null;
-            TimeComboBox.Text = null;
-            VehicleComboBox.Text = null;
-            OdometerComboBox.Text = null;
-            LocationComboBox.Text = null;
-            DriverComboBox.Text = null;
-        }
-        private void TableComboBox_SelectionChangeCommitted(object sender, EventArgs e)
+        private void LoadColumns()
         {
-            ClearSelection();
             con = new OleDbConnection(constr);
             using (con)
             {
@@ -80,12 +111,7 @@ namespace Access_GeoGo.Forms
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         string columnName = dt.Rows[i][3].ToString();
-                        IndexComboBox.Items.Add(columnName);
-                        TimeComboBox.Items.Add(columnName);
-                        VehicleComboBox.Items.Add(columnName);
-                        OdometerComboBox.Items.Add(columnName);
-                        LocationComboBox.Items.Add(columnName);
-                        DriverComboBox.Items.Add(columnName);
+                        foreach (ComboBox cBox in columnComboBoxes.Keys) cBox.Items.Add(columnName);
                     }
                 }
                 catch (Exception err)
@@ -93,31 +119,61 @@ namespace Access_GeoGo.Forms
                     Program.ShowError(err);
                 }
             }
+            SetDefaultColumns();
+            EnableControls();
         }
+
+        private void FindDBButton_Click(object sender, EventArgs e)
+        {
+            FindDBDialog.ShowDialog();
+        }
+        private void FindDBDialog_FileOk(object sender, CancelEventArgs e)
+        {
+            ClearSelection();
+            TableComboBox.Items.Clear();
+            TableComboBox.Text = null;
+
+            db = DBFileNameBox.Text = FindDBDialog.FileName;
+            LoadTables(db);
+        }
+        private void TableComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ClearSelection();
+            LoadColumns();
+        }
+        private void CheckEnableControls(object sender, EventArgs e)
+        {
+            EnableControls();
+        }
+
         public string File;
         public decimal Limit;
-        public string Table = "Transaction";
-        public string Id = "Transaction_ID";
-        public string Time = "TxTimestamp";
-        public string Vehicle = "Vehicle";
-        public string Odometer = "Odometer";
-        public string GPSLocation = "Location";
-        public string Driver = "Driver";
-        private void DoneButton_Click(object sender, EventArgs e)
-        {
+        public string Table;
+        public string Id;
+        public string Time;
+        public string Vehicle;
+        public string Odometer;
+        public string EngineHrs;
+        public string Latitude;
+        public string Longitude;
+        public string Driver;
+        private void DoneBtn_Click(object sender, EventArgs e)
+        {            
             File = DBFileNameBox.Text;
             Limit = LimitEntriesBox.Value;
-            Table = string.IsNullOrEmpty(TableComboBox.Text) ? "Transaction" : TableComboBox.Text;
-            Id = string.IsNullOrEmpty(IndexComboBox.Text) ? "Transaction_ID" : IndexComboBox.Text;
-            Time = string.IsNullOrEmpty(TimeComboBox.Text) ? "TxTimestamp" : TimeComboBox.Text;
-            Vehicle = string.IsNullOrEmpty(VehicleComboBox.Text) ? "Vehicle" : VehicleComboBox.Text;
-            Odometer = string.IsNullOrEmpty(OdometerComboBox.Text) ? "Odometer" : OdometerComboBox.Text;
-            GPSLocation = string.IsNullOrEmpty(LocationComboBox.Text) ? "Location" : LocationComboBox.Text;
-            Driver = string.IsNullOrEmpty(DriverComboBox.Text) ? "Driver" : DriverComboBox.Text;
-            var selectionOK = MessageBox.Show($"Table: {Table}\nId: {Id}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nLocation: {GPSLocation}\nDriver: {Driver}", "Verify Selections", MessageBoxButtons.OKCancel);
-            if (!Program.CheckAuth()) return;
-            if (selectionOK == DialogResult.Cancel) return;
-            var results = new FuelTransPage(this);
+            Table = TableComboBox.Text;
+            Id = IndexComboBox.Text;
+            Time = TimeComboBox.Text;
+            Vehicle = VehicleComboBox.Text;
+            Odometer = OdometerComboBox.Text;
+            EngineHrs = EngineHrsComboBox.Text;
+            Latitude = LatitudeComboBox.Text;
+            Longitude = LongitudeComboBox.Text;
+            Driver = DriverComboBox.Text;
+            string msg = $"Table: {Table}\nId: {Id}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nEngine Hrs: {EngineHrs}\nLatitude: {Latitude}\nLongitude: {Longitude}\nDriver: {Driver}";
+            DialogResult selectionOK = MessageBox.Show(msg, "Verify Selections", MessageBoxButtons.OKCancel);
+            if (!Program.CheckAuth() || selectionOK == DialogResult.Cancel) return;
+            FuelTransPage results = new FuelTransPage(this);
             results.Show();
         }
         /// <summary>
@@ -125,19 +181,35 @@ namespace Access_GeoGo.Forms
         /// </summary>
         private void ClearBtn_Click(object sender, EventArgs e)
         {
-            Table = string.IsNullOrEmpty(TableComboBox.Text) ? "Transaction" : TableComboBox.Text;
-            Odometer = string.IsNullOrEmpty(OdometerComboBox.Text) ? "Odometer" : OdometerComboBox.Text;
-            GPSLocation = string.IsNullOrEmpty(LocationComboBox.Text) ? "Location" : LocationComboBox.Text;
-            Driver = string.IsNullOrEmpty(DriverComboBox.Text) ? "Driver" : DriverComboBox.Text;
-            db = DBFileNameBox.Text = FindDBDialog.FileName;
-            constr = @"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + db + "; Persist Security Info = False";
-            string query = $"UPDATE [{Table}] SET [{Odometer}] = '0', [{GPSLocation}] = '', [{Driver}] = '';";
+            List<string> msg = new List<string>();
+            List<string> updateSQL = new List<string>();
+
+            Dictionary<ComboBox, string> gtFields = new Dictionary<ComboBox, string>{
+                { OdometerComboBox, "0" },
+                { EngineHrsComboBox, "0" },
+                { LatitudeComboBox, "" },
+                { LongitudeComboBox, "" },
+                { DriverComboBox, "" }
+            };
+            foreach (KeyValuePair<ComboBox, string> field in gtFields)
+            {
+                if (!string.IsNullOrWhiteSpace(field.Key.Text))
+                {
+                    updateSQL.Add($"[{field.Key.Text}] = '{field.Value}'");
+                    msg.Add(field.Key.Text);
+                }
+            }
+
+            DialogResult selectionOK = MessageBox.Show(string.Join("\n", msg), "Clear All Data from Selected Fields", MessageBoxButtons.OKCancel);
+            if (selectionOK == DialogResult.Cancel) return;
+
+            string query = $"UPDATE [{TableComboBox.Text}] SET " + string.Join(" ,", updateSQL) + ";";
             con = new OleDbConnection(constr);
             using (OleDbCommand cmd = new OleDbCommand(query, con))
             {
                 try
                 {
-                    con.Open();                    
+                    con.Open();
                     int updated = cmd.ExecuteNonQuery();
                     MessageBox.Show($"{updated} entries updated successfully.", "DB Update Complete");
                     con.Close();

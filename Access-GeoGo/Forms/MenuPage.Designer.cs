@@ -114,11 +114,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VersionLabel.AutoSize = true;
             this.VersionLabel.Font = new System.Drawing.Font("Century Gothic", 7F);
-            this.VersionLabel.Location = new System.Drawing.Point(12, 267);
+            this.VersionLabel.Location = new System.Drawing.Point(11, 267);
             this.VersionLabel.Name = "VersionLabel";
-            this.VersionLabel.Size = new System.Drawing.Size(162, 15);
+            this.VersionLabel.Size = new System.Drawing.Size(168, 15);
             this.VersionLabel.TabIndex = 14;
-            this.VersionLabel.Text = "GeoGo Version: 2.0 | © 6.2020";
+            this.VersionLabel.Text = "GeoGo Version: 3.0 | © 10.2021";
             // 
             // FaultCodesBtn
             // 

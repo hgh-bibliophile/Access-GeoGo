@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Access_GeoGo.Forms;
 using System.Threading;
 using Access_GeoGo.Data.Geotab;
+using System.Diagnostics;
 
 namespace Access_GeoGo.Data
 {
@@ -33,7 +34,6 @@ namespace Access_GeoGo.Data
         static Dictionary<Id, Device> _deviceCache;
         static Dictionary<string, Id> _deviceNameCache;
         static Dictionary<Id, User> _driverCache;
-        static Dictionary<string, Id> _driverNameCache;
 
         static List<DeviceEntry> DeviceEntriesList;
         static List<DBEntry> DeviceErrorList;
@@ -58,21 +58,14 @@ namespace Access_GeoGo.Data
         protected virtual void Dispose(bool disposing)
         {
             // Check to see if Dispose has already been called.
-            if (!this.disposed)
+            if (!disposed)
             {
-                // If disposing equals true, dispose all managed
-                // and unmanaged resources.
-                if (disposing)
-                {
-                    GeotabAPI.Dispose();
-                    // Dispose managed resources.
-                    //component.Dispose();
-                }
+                // If disposing equals true, dispose all managed and unmanaged resources.
 
-                // Call the appropriate methods to clean up
-                // unmanaged resources here.
-                // If disposing is false,
-                // only the following code is executed.
+                if (disposing) GeotabAPI.Dispose(); // Dispose managed resources.
+                
+                // Call the appropriate methods to clean up unmanaged resources here.
+                // If disposing is false, only the following code is executed.
                 GGP = null;
                 DBP = null;
                 ConStr = null;
@@ -85,7 +78,6 @@ namespace Access_GeoGo.Data
                 _deviceCache = null;
                 _deviceNameCache = null;
                 _driverCache = null;
-                _driverNameCache = null;
                 DeviceEntriesList = null;
                 DeviceErrorList = null;
                 GeoGoEntries = null;
@@ -104,13 +96,13 @@ namespace Access_GeoGo.Data
 
         public async Task GeoGoQueryAsync()
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                var prep = PrepUIPage();
-                var devCache = GetDeviceCache();
-                var drvrCache = GetDriverCache();
-                var getDB = GetDBEntries();
+                Task prep = PrepUIPage();
+                Task devCache = GetDeviceCache();
+                Task drvrCache = GetDriverCache();
+                Task getDB = GetDBEntries();
                 await Task.WhenAll(prep, devCache, drvrCache, getDB);
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -150,7 +142,7 @@ namespace Access_GeoGo.Data
             if (CT.IsCancellationRequested) return;
             decimal percentage = Convert.ToDecimal(val) / 100;
             decimal value = Math.Round(Convert.ToDecimal(GGP.QueryLoadingBar.Maximum) * percentage);
-            if (value < GGP.QueryLoadingBar.Value) return;
+            if (value != 0 && value < GGP.QueryLoadingBar.Value) return;
             GGP.QueryLoadingBar.Value = (int)value;
             GGP.QueryLoadingLabel.Text = stat;
         }
@@ -178,7 +170,6 @@ namespace Access_GeoGo.Data
         public async Task GetDriverCache()
         {
             _driverCache = await GeotabAPI.GetDictionary<User, Id>(d => d.Id);
-            _driverNameCache = _driverCache.ToDictionary(d => d.Value.Name, d => d.Key);
             await UpdateProgress(40);
         }
         public async Task GetDBEntries()
@@ -213,13 +204,14 @@ namespace Access_GeoGo.Data
             CT.ThrowIfCancellationRequested();
             DeviceEntriesList = new List<DeviceEntry> { };
             DeviceErrorList = new List<DBEntry> { };
-            var id = DBP.Id;
-            var time = DBP.Time;
+            string id = DBP.Id;
+            string time = DBP.Time;
             foreach (DataRow row in AccessDBEntries)
             {
-                string devName = Regex.Replace(row.Field<string>(DBP.Vehicle), @"\s\d*", "");
+                string devNameField = !string.IsNullOrEmpty(row.Field<string>(DBP.Vehicle)) ? row.Field<string>(DBP.Vehicle) : "";
+                string devName = Regex.Replace(devNameField, @"\s\d*", "");
                 if (string.IsNullOrEmpty(devName)) continue;
-                var dbEntry = new DBEntry(new DBEntryParams
+                DBEntry dbEntry = new DBEntry(new DBEntryParams
                 {
                     Id = row.Field<int>(id),
                     Vehicle = devName,
@@ -292,10 +284,10 @@ namespace Access_GeoGo.Data
                 throw;
             }
             if (CT.IsCancellationRequested) return;
-            var oCallResults = odometerCalls.GetResults();
-            var eHoursCallResults = engineHoursCalls.GetResults();
-            var lCallResults = locationCalls.GetResults();
-            var dCallResults = driverCalls.GetResults();
+            List<StatusData> oCallResults = odometerCalls.GetResults();
+            List<StatusData> eHoursCallResults = engineHoursCalls.GetResults();
+            List<LogRecord> lCallResults = locationCalls.GetResults();
+            List<DriverChange> dCallResults = driverCalls.GetResults();
             await UpdateProgress(75);
 
             GeoGoEntries = new List<GeoGo_Entry> { };
@@ -330,7 +322,8 @@ namespace Access_GeoGo.Data
             dt.Columns.Add("Deivce Name");
             dt.Columns.Add("Odometer");
             dt.Columns.Add("Engine Hours");
-            dt.Columns.Add("Location");
+            dt.Columns.Add("Latitude");
+            dt.Columns.Add("Longitude");
             dt.Columns.Add("Driver");
             foreach (GeoGo_Entry GeoGo in GeoGoEntries)
             {
@@ -340,8 +333,9 @@ namespace Access_GeoGo.Data
                 dr[2] = GeoGo.DeviceName;
                 dr[3] = GeoGo.Miles;
                 dr[4] = GeoGo.Hours;
-                dr[5] = GeoGo.Location;
-                dr[6] = GeoGo.Driver;
+                dr[5] = GeoGo.Latitude;
+                dr[6] = GeoGo.Longitude;
+                dr[7] = GeoGo.Driver;
                 dt.Rows.Add(dr);
             }
             foreach (DBEntry dbe in DeviceErrorList)
@@ -352,8 +346,9 @@ namespace Access_GeoGo.Data
                 dr[2] = dbe.Vehicle;
                 dr[3] = -3;
                 dr[4] = 0;
-                dr[5] = 0;
+                dr[5] = "";
                 dr[6] = "";
+                dr[7] = "";
                 dt.Rows.Add(dr);
             }
             GeoGoTable = dt;
@@ -375,9 +370,13 @@ namespace Access_GeoGo.Data
                     DataRowCollection drs = dt.Rows;
                     foreach (DataRow dr in drs)
                     {
-                        var oReading = dr.Field<string>("Odometer");
-                        var entryId = dr.Field<string>("Entry ID");
-                        string query = $"UPDATE [{DBP.Table}] SET [{DBP.Odometer}] = '{oReading}' WHERE [{DBP.Id}] = {entryId};";
+                        string oReading = dr.Field<string>("Odometer");
+                        string engineHrs = dr.Field<string>("Engine Hours");
+                        string latitude = dr.Field<string>("Latitude");
+                        string longitude = dr.Field<string>("Longitude");
+                        string driver = dr.Field<string>("Driver");
+                        string entryId = dr.Field<string>("Entry ID");
+                        string query = $"UPDATE [{DBP.Table}] SET [{DBP.Odometer}] = '{oReading}', [{DBP.EngineHrs}] = '{engineHrs}',[{DBP.Latitude}] = '{latitude}',[{DBP.Longitude}] = '{longitude}',[{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};";
                         using (OleDbCommand cmd = new OleDbCommand(query, con, transaction))
                         {
                             updated += cmd.ExecuteNonQuery();
@@ -391,51 +390,10 @@ namespace Access_GeoGo.Data
                 }
                 finally
                 {
-                    if (!GGP.IsDisposed)
-                        GGP.InsertBtn.Enabled = false;
+                    if (!GGP.IsDisposed) GGP.InsertBtn.Enabled = false;
                     MessageBox.Show($"{updated} out of {dt.Rows.Count} entries updated successfully.", "DB Update Complete");
                 }
             }
         }
     }
 }
-/*
-public static class DictionaryExtensionsClass
-{
-    public static Dictionary<TKey, TElement> ToSafeDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
-    {
-        if (source == null)
-            throw new ArgumentException("source");
-        if (keySelector == null)
-            throw new ArgumentException("keySelector");
-        if (elementSelector == null)
-            throw new ArgumentException("elementSelector");
-        Dictionary<TKey, TElement> d = new Dictionary<TKey, TElement>(comparer);
-        foreach (TSource element in source)
-        {
-            if (!d.ContainsKey(keySelector(element)))
-                d.Add(keySelector(element), elementSelector(element));
-        }
-
-        return d;
-    }
-}*/
-
-/*          var ListOFValues = _deviceCache.Select(kv => kv.Value.Name).ToList();
-            Dictionary<string, int> wordCount = new Dictionary<string, int>();
-
-            //count them all:
-            ListOFValues.ForEach(word =>
-            {
-                string key = word.ToLower();
-                if (!wordCount.ContainsKey(key))
-                    wordCount.Add(key, 0);
-                wordCount[key]++;
-            });
-
-            //remove words appearing only once:
-            wordCount.Keys.ToList().FindAll(word => wordCount[word] == 1).ForEach(key => wordCount.Remove(key));
-
-            Console.WriteLine(string.Format("Found {0} duplicates in the list:", wordCount.Count));
-            wordCount.Keys.ToList().ForEach(key => Console.WriteLine(string.Format("{0} appears {1} times", key, wordCount[key])));
-*/

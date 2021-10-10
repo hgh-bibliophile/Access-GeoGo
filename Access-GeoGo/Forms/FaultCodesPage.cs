@@ -7,10 +7,6 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Access_GeoGo;
-using System.Configuration;
-using Access_GeoGo.Data.Configuration;
-using System.Security.Cryptography;
 using System.Threading;
 using Access_GeoGo.Data.Geotab;
 
@@ -75,12 +71,12 @@ namespace Access_GeoGo.Forms
         }
         private async Task<FeedResult<FaultData>> GetFaultFeed()
         {
-            var FaultData = Convert.ToInt64(Program.GeoGoCONFIG.DataFeeds["FaultData"].Token);
+            var FaultData = Convert.ToInt64(Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token);
             FeedResult<FaultData> FeedResults = await GeotabAPI.Get<FeedResult<FaultData>, FaultData>("GetFeed", new { 
                 resultsLimit = 10000,
                 fromVersion = FaultData });
-            Program.GeoGoCONFIG.DataFeeds["FaultData"].Token = FeedResults.ToVersion.ToString();
-            Program.CONFIG.Save();
+            Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token = FeedResults.ToVersion.ToString();
+            Program.CONFIG.APP_CONFIG.Save();
             return FeedResults;
         }
         private async Task<List<FaultData>> GetFaultCodes()

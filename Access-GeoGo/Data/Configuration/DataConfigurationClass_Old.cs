@@ -1,9 +1,26 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 
-namespace Access_GeoGo.Data.Configuration
+namespace Access_GeoGo.Data.Configuration.Old
 {
-    public class GeoGoCDM : ConfigurationSection
+    public class GeoGo_UserConfig
     {
+        public string User { get; set; }
+        public string Database { get; set; }
+        public GeotabConfig Geotab { get; set; }
+        public class GeotabConfig
+        {
+            public Dictionary<string, string> Auth { get; set; }
+            public Dictionary<string, string> DataFeeds { get; set; }
+        }          
+    }
+    
+
+
+
+    public class GeoGo_DataFeeds : ConfigurationSection
+    {
+        /*
         [ConfigurationProperty("Databases")]
         [ConfigurationCollection(typeof(DatabaseCollection), AddItemName = "Database")]
         public DatabaseCollection Databases
@@ -21,12 +38,22 @@ namespace Access_GeoGo.Data.Configuration
             {
                 return (DataFeedCollection)this["DataFeeds"];
             }
+        }*/
+        [ConfigurationProperty("Users")]
+        [ConfigurationCollection(typeof(UserCollection), AddItemName = "User")]
+        public UserCollection User
+        {
+            get
+            {
+                return (UserCollection)this["Users"];
+            }
         }
         public override bool IsReadOnly()
         {
             return false;
         }
     }
+    /*
     public class DatabaseCollection : ConfigurationElementCollection
     {
         [ConfigurationProperty("currentUser", DefaultValue = "Daddy")]
@@ -111,6 +138,8 @@ namespace Access_GeoGo.Data.Configuration
             return false;
         }
     }
+    
+    */
     public class DataFeedCollection : ConfigurationElementCollection
     {
         public DataFeedElement this[int index]
@@ -176,6 +205,71 @@ namespace Access_GeoGo.Data.Configuration
             set
             {
                 base["token"] = value;
+            }
+        }
+        public override bool IsReadOnly()
+        {
+            return false;
+        }
+    }
+    public class UserCollection : ConfigurationElementCollection
+    {
+
+
+
+
+
+        public UserElement this[int index]
+        {
+            get
+            {
+                return (UserElement)BaseGet(index);
+            }
+            set
+            {
+                if (BaseGet(index) != null)
+                    BaseRemoveAt(index);
+                BaseAdd(index, value);
+            }
+        }
+        public new UserElement this[string key]
+        {
+            get
+            {
+                return (UserElement)BaseGet(key);
+            }
+            set
+            {
+                if (BaseGet(key) != null)
+                    BaseRemoveAt(BaseIndexOf(BaseGet(key)));
+                BaseAdd(value);
+            }
+        }
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new UserElement();
+        }
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((UserElement)element).Name;
+        }
+        public override bool IsReadOnly()
+        {
+            return false;
+        }
+    }
+    public class UserElement : ConfigurationElement
+    {
+        [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
+        public string Name
+        {
+            get
+            {
+                return (string)base["name"];
+            }
+            set
+            {
+                base["name"] = value;
             }
         }
         public override bool IsReadOnly()

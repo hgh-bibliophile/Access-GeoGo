@@ -34,17 +34,18 @@ namespace Access_GeoGo.Forms
         //Authentication Button Enabling & Default Text Entering
         private void AuthenticatePage_Load(object sender, EventArgs e)
         {
+            Username = Username_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Username;
+            Password = Password_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Password;
+            Database = Database_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Database;
             EnableAuthenticateButton();
-            Username = Username_Input.Text;
-            Password = Password_Input.Text;
-            Database = Database_Input.Text;
         }
         /// <summary>
-        /// Enables the <see cref="AuthenticateButton"/> if all fields are filled in
+        /// Enables the <see cref="AuthenticateButton"/> if username & password are filled in
         /// </summary>
         private void EnableAuthenticateButton()
         {
-            this.AuthenticateButton.Enabled = !string.IsNullOrWhiteSpace(this.Password_Input.Text) && !string.IsNullOrWhiteSpace(this.Username_Input.Text);
+            AuthenticateButton.Enabled = !string.IsNullOrWhiteSpace(Password_Input.Text) 
+                && !string.IsNullOrWhiteSpace(Username_Input.Text);
         }
         /// <summary>
         /// On the <see cref="AuthenticateButton"/> click, an <see cref="API"/> object authenticated with the entered username, password, and database
@@ -75,7 +76,7 @@ namespace Access_GeoGo.Forms
         {
             if (Form.ModifierKeys == Keys.None && keyData == Keys.Escape)
             {
-                this.Close();
+                Close();
                 return true;
             }
             return base.ProcessDialogKey(keyData);
