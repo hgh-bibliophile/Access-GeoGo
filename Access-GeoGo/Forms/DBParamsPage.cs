@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Access_GeoGo.Forms
@@ -14,8 +15,9 @@ namespace Access_GeoGo.Forms
         {
             InitializeComponent();
             db = DBFileNameBox.Text = Program.CONFIG.UserConfig.Database;
-            columnComboBoxes = new Dictionary<ComboBox,string>{
+            _columnData = new Dictionary<ComboBox,string>{
                 { IndexComboBox, dbConfig.Columns.Id },
+                { GTStatusComboBox, dbConfig.Columns.GTStatus },
                 { TimeComboBox, dbConfig.Columns.Time },
                 { VehicleComboBox, dbConfig.Columns.Vehicle },
                 { OdometerComboBox, dbConfig.Columns.Odometer },
@@ -24,40 +26,34 @@ namespace Access_GeoGo.Forms
                 { LongitudeComboBox, dbConfig.Columns.Longitude },
                 { DriverComboBox, dbConfig.Columns.Driver }
             };
+            _columnCBoxes = _columnData.Keys.ToList();
             LoadTables(db);
             EnableControls();
-            if (Program.CONFIG.UserConfig.Name != "Hannah") ClearBtn.Enabled = false;
+            if (Program.CONFIG.UserConfig.Name != "Hannah") ClearBtn.Enabled = ClearBtn.Visible = false;
         }
         static string db;
         static string constr;
         static OleDbConnection con;
         private readonly GeoGo_UserConfig.DBConfig dbConfig = Program.CONFIG.UserConfig.DB_Config;
-        private Dictionary<ComboBox, string> columnComboBoxes;
+        private Dictionary<ComboBox, string> _columnData;
+        private List<ComboBox> _columnCBoxes;
+
         private void EnableControls()
         {
             DoneBtn.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text) 
                 && !string.IsNullOrWhiteSpace(TableComboBox.Text) 
-                && !string.IsNullOrWhiteSpace(IndexComboBox.Text)
-                && !string.IsNullOrWhiteSpace(TimeComboBox.Text)
-                && !string.IsNullOrWhiteSpace(VehicleComboBox.Text)
-                && !string.IsNullOrWhiteSpace(OdometerComboBox.Text)
-                && !string.IsNullOrWhiteSpace(EngineHrsComboBox.Text)
-                && !string.IsNullOrWhiteSpace(LatitudeComboBox.Text)
-                && !string.IsNullOrWhiteSpace(LongitudeComboBox.Text)
-                && !string.IsNullOrWhiteSpace(DriverComboBox.Text);
+                && !string.IsNullOrWhiteSpace(GTSValueComboBox.Text) 
+                && _columnCBoxes.All(cBox => !string.IsNullOrWhiteSpace(cBox.Text));
             ClearBtn.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text)
-                && !string.IsNullOrWhiteSpace(TableComboBox.Text) 
-                && (!string.IsNullOrWhiteSpace(OdometerComboBox.Text)
-                | !string.IsNullOrWhiteSpace(EngineHrsComboBox.Text)
-                | !string.IsNullOrWhiteSpace(LatitudeComboBox.Text)
-                | !string.IsNullOrWhiteSpace(LongitudeComboBox.Text)
-                | !string.IsNullOrWhiteSpace(DriverComboBox.Text));
+                && !string.IsNullOrWhiteSpace(TableComboBox.Text)
+                && !string.IsNullOrWhiteSpace(GTStatusComboBox.Text)
+                && !string.IsNullOrWhiteSpace(GTSValueComboBox.Text);
             TableComboBox.Enabled = !string.IsNullOrWhiteSpace(DBFileNameBox.Text);
-            foreach (ComboBox cBox in columnComboBoxes.Keys) cBox.Enabled = !string.IsNullOrWhiteSpace(TableComboBox.Text);
+            foreach (ComboBox cBox in _columnCBoxes) cBox.Enabled = !string.IsNullOrWhiteSpace(TableComboBox.Text);
         }
         private void ClearSelection()
         {
-            foreach (ComboBox cBox in columnComboBoxes.Keys)
+            foreach (ComboBox cBox in _columnCBoxes)
             {
                 cBox.Items.Clear();
                 cBox.Text = null;
@@ -66,10 +62,11 @@ namespace Access_GeoGo.Forms
         }
         private void SetDefaultColumns()
         {
-            foreach (KeyValuePair<ComboBox, string> column in columnComboBoxes)
+            foreach (KeyValuePair<ComboBox, string> column in _columnData)
             {
                 column.Key.SelectedIndex = column.Key.FindStringExact(column.Value);
             }
+            GTSValueComboBox.SelectedIndex = GTSValueComboBox.FindStringExact(dbConfig.GTStatus_Default);
         }
         private void LoadTables(string db)
         {
@@ -111,7 +108,7 @@ namespace Access_GeoGo.Forms
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         string columnName = dt.Rows[i][3].ToString();
-                        foreach (ComboBox cBox in columnComboBoxes.Keys) cBox.Items.Add(columnName);
+                        foreach (ComboBox cBox in _columnCBoxes) cBox.Items.Add(columnName);
                     }
                 }
                 catch (Exception err)
@@ -150,6 +147,8 @@ namespace Access_GeoGo.Forms
         public decimal Limit;
         public string Table;
         public string Id;
+        public string GTStatus;
+        public string GTS_Value;
         public string Time;
         public string Vehicle;
         public string Odometer;
@@ -163,6 +162,8 @@ namespace Access_GeoGo.Forms
             Limit = LimitEntriesBox.Value;
             Table = TableComboBox.Text;
             Id = IndexComboBox.Text;
+            GTStatus = GTStatusComboBox.Text;
+            GTS_Value = GTSValueComboBox.Text;
             Time = TimeComboBox.Text;
             Vehicle = VehicleComboBox.Text;
             Odometer = OdometerComboBox.Text;
@@ -170,7 +171,7 @@ namespace Access_GeoGo.Forms
             Latitude = LatitudeComboBox.Text;
             Longitude = LongitudeComboBox.Text;
             Driver = DriverComboBox.Text;
-            string msg = $"Table: {Table}\nId: {Id}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nEngine Hrs: {EngineHrs}\nLatitude: {Latitude}\nLongitude: {Longitude}\nDriver: {Driver}";
+            string msg = $"Table: {Table}\nGTS Record Type: {GTS_Value}\n\nId: {Id}\nGT Status: {GTStatus}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nEngine Hrs: {EngineHrs}\nLatitude: {Latitude}\nLongitude: {Longitude}\nDriver: {Driver}";
             DialogResult selectionOK = MessageBox.Show(msg, "Verify Selections", MessageBoxButtons.OKCancel);
             if (!Program.CheckAuth() || selectionOK == DialogResult.Cancel) return;
             FuelTransPage results = new FuelTransPage(this);
@@ -181,6 +182,26 @@ namespace Access_GeoGo.Forms
         /// </summary>
         private void ClearBtn_Click(object sender, EventArgs e)
         {
+            DialogResult selectionOK = MessageBox.Show($"Set [{dbConfig.Columns.GTStatus}] to '{GTSValueComboBox.Text}' for ALL records?", "Confirm Action", MessageBoxButtons.OKCancel);
+            if (selectionOK == DialogResult.Cancel) return;
+
+            string query = $"UPDATE [{TableComboBox.Text}] SET [{dbConfig.Columns.GTStatus}] = '{GTSValueComboBox.Text}';";
+            con = new OleDbConnection(constr);
+            using (OleDbCommand cmd = new OleDbCommand(query, con))
+            {
+                try
+                {
+                    con.Open();
+                    int updated = cmd.ExecuteNonQuery();
+                    MessageBox.Show($"{updated} entries updated successfully.", "DB Update Complete");
+                    con.Close();
+                }
+                catch (Exception err)
+                {
+                    Program.ShowError(err);
+                }
+            }
+            /*
             List<string> msg = new List<string>();
             List<string> updateSQL = new List<string>();
 
@@ -218,7 +239,7 @@ namespace Access_GeoGo.Forms
                 {
                     Program.ShowError(err);
                 }
-            }
+            }*/
         }
     }
 }

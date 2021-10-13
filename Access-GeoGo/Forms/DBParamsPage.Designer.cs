@@ -59,6 +59,9 @@ namespace Access_GeoGo.Forms
             this.DriverColumnLabel = new System.Windows.Forms.Label();
             this.LongitudeColumnLabel = new System.Windows.Forms.Label();
             this.EngineHrsColumnLabel = new System.Windows.Forms.Label();
+            this.GTStatusComboBox = new System.Windows.Forms.ComboBox();
+            this.GTStatusColumnLabel = new System.Windows.Forms.Label();
+            this.GTSValueComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.LimitEntriesBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -138,7 +141,7 @@ namespace Access_GeoGo.Forms
             this.OdometerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.OdometerComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.OdometerComboBox.FormattingEnabled = true;
-            this.OdometerComboBox.Location = new System.Drawing.Point(121, 146);
+            this.OdometerComboBox.Location = new System.Drawing.Point(121, 173);
             this.OdometerComboBox.Name = "OdometerComboBox";
             this.OdometerComboBox.Size = new System.Drawing.Size(138, 21);
             this.OdometerComboBox.TabIndex = 7;
@@ -146,7 +149,7 @@ namespace Access_GeoGo.Forms
             // 
             // OdometerColumnLabel
             // 
-            this.OdometerColumnLabel.Location = new System.Drawing.Point(12, 147);
+            this.OdometerColumnLabel.Location = new System.Drawing.Point(12, 174);
             this.OdometerColumnLabel.Name = "OdometerColumnLabel";
             this.OdometerColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.OdometerColumnLabel.TabIndex = 12;
@@ -159,7 +162,7 @@ namespace Access_GeoGo.Forms
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VehicleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.VehicleComboBox.FormattingEnabled = true;
-            this.VehicleComboBox.Location = new System.Drawing.Point(121, 119);
+            this.VehicleComboBox.Location = new System.Drawing.Point(121, 146);
             this.VehicleComboBox.Name = "VehicleComboBox";
             this.VehicleComboBox.Size = new System.Drawing.Size(138, 21);
             this.VehicleComboBox.TabIndex = 6;
@@ -167,7 +170,7 @@ namespace Access_GeoGo.Forms
             // 
             // VehicleColumnLabel
             // 
-            this.VehicleColumnLabel.Location = new System.Drawing.Point(12, 120);
+            this.VehicleColumnLabel.Location = new System.Drawing.Point(12, 147);
             this.VehicleColumnLabel.Name = "VehicleColumnLabel";
             this.VehicleColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.VehicleColumnLabel.TabIndex = 14;
@@ -180,7 +183,7 @@ namespace Access_GeoGo.Forms
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TimeComboBox.FormattingEnabled = true;
-            this.TimeComboBox.Location = new System.Drawing.Point(121, 92);
+            this.TimeComboBox.Location = new System.Drawing.Point(121, 119);
             this.TimeComboBox.Name = "TimeComboBox";
             this.TimeComboBox.Size = new System.Drawing.Size(138, 21);
             this.TimeComboBox.TabIndex = 5;
@@ -188,7 +191,7 @@ namespace Access_GeoGo.Forms
             // 
             // TimestampColumnLabel
             // 
-            this.TimestampColumnLabel.Location = new System.Drawing.Point(12, 93);
+            this.TimestampColumnLabel.Location = new System.Drawing.Point(12, 120);
             this.TimestampColumnLabel.Name = "TimestampColumnLabel";
             this.TimestampColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.TimestampColumnLabel.TabIndex = 16;
@@ -199,7 +202,7 @@ namespace Access_GeoGo.Forms
             // 
             this.DoneBtn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.DoneBtn.Location = new System.Drawing.Point(12, 314);
+            this.DoneBtn.Location = new System.Drawing.Point(12, 339);
             this.DoneBtn.Name = "DoneBtn";
             this.DoneBtn.Size = new System.Drawing.Size(320, 41);
             this.DoneBtn.TabIndex = 14;
@@ -214,7 +217,7 @@ namespace Access_GeoGo.Forms
             0,
             0,
             0});
-            this.LimitEntriesBox.Location = new System.Drawing.Point(121, 284);
+            this.LimitEntriesBox.Location = new System.Drawing.Point(121, 311);
             this.LimitEntriesBox.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -236,7 +239,7 @@ namespace Access_GeoGo.Forms
             // 
             // NumEntriesLabel
             // 
-            this.NumEntriesLabel.Location = new System.Drawing.Point(12, 282);
+            this.NumEntriesLabel.Location = new System.Drawing.Point(12, 309);
             this.NumEntriesLabel.Name = "NumEntriesLabel";
             this.NumEntriesLabel.Size = new System.Drawing.Size(103, 20);
             this.NumEntriesLabel.TabIndex = 18;
@@ -245,7 +248,7 @@ namespace Access_GeoGo.Forms
             // 
             // MaxEntriesLabel
             // 
-            this.MaxEntriesLabel.Location = new System.Drawing.Point(175, 282);
+            this.MaxEntriesLabel.Location = new System.Drawing.Point(175, 309);
             this.MaxEntriesLabel.Name = "MaxEntriesLabel";
             this.MaxEntriesLabel.Size = new System.Drawing.Size(157, 20);
             this.MaxEntriesLabel.TabIndex = 19;
@@ -259,7 +262,7 @@ namespace Access_GeoGo.Forms
             this.LatitudeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.LatitudeComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.LatitudeComboBox.FormattingEnabled = true;
-            this.LatitudeComboBox.Location = new System.Drawing.Point(121, 200);
+            this.LatitudeComboBox.Location = new System.Drawing.Point(121, 227);
             this.LatitudeComboBox.Name = "LatitudeComboBox";
             this.LatitudeComboBox.Size = new System.Drawing.Size(138, 21);
             this.LatitudeComboBox.TabIndex = 9;
@@ -272,7 +275,7 @@ namespace Access_GeoGo.Forms
             this.DriverComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.DriverComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.DriverComboBox.FormattingEnabled = true;
-            this.DriverComboBox.Location = new System.Drawing.Point(121, 254);
+            this.DriverComboBox.Location = new System.Drawing.Point(121, 281);
             this.DriverComboBox.Name = "DriverComboBox";
             this.DriverComboBox.Size = new System.Drawing.Size(138, 21);
             this.DriverComboBox.TabIndex = 11;
@@ -285,7 +288,7 @@ namespace Access_GeoGo.Forms
             this.LongitudeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.LongitudeComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.LongitudeComboBox.FormattingEnabled = true;
-            this.LongitudeComboBox.Location = new System.Drawing.Point(121, 227);
+            this.LongitudeComboBox.Location = new System.Drawing.Point(121, 254);
             this.LongitudeComboBox.Name = "LongitudeComboBox";
             this.LongitudeComboBox.Size = new System.Drawing.Size(138, 21);
             this.LongitudeComboBox.TabIndex = 10;
@@ -298,7 +301,7 @@ namespace Access_GeoGo.Forms
             this.EngineHrsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.EngineHrsComboBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.EngineHrsComboBox.FormattingEnabled = true;
-            this.EngineHrsComboBox.Location = new System.Drawing.Point(121, 173);
+            this.EngineHrsComboBox.Location = new System.Drawing.Point(121, 200);
             this.EngineHrsComboBox.Name = "EngineHrsComboBox";
             this.EngineHrsComboBox.Size = new System.Drawing.Size(138, 21);
             this.EngineHrsComboBox.TabIndex = 8;
@@ -320,13 +323,13 @@ namespace Access_GeoGo.Forms
             this.ClearBtn.Name = "ClearBtn";
             this.ClearBtn.Size = new System.Drawing.Size(67, 49);
             this.ClearBtn.TabIndex = 13;
-            this.ClearBtn.Text = "Clear Geotab Data";
+            this.ClearBtn.Text = "Reset GT Status";
             this.ClearBtn.UseVisualStyleBackColor = true;
             this.ClearBtn.Click += new System.EventHandler(this.ClearBtn_Click);
             // 
             // LatitudeColumnLabel
             // 
-            this.LatitudeColumnLabel.Location = new System.Drawing.Point(12, 201);
+            this.LatitudeColumnLabel.Location = new System.Drawing.Point(12, 228);
             this.LatitudeColumnLabel.Name = "LatitudeColumnLabel";
             this.LatitudeColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.LatitudeColumnLabel.TabIndex = 21;
@@ -335,7 +338,7 @@ namespace Access_GeoGo.Forms
             // 
             // DriverColumnLabel
             // 
-            this.DriverColumnLabel.Location = new System.Drawing.Point(12, 255);
+            this.DriverColumnLabel.Location = new System.Drawing.Point(12, 282);
             this.DriverColumnLabel.Name = "DriverColumnLabel";
             this.DriverColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.DriverColumnLabel.TabIndex = 23;
@@ -344,7 +347,7 @@ namespace Access_GeoGo.Forms
             // 
             // LongitudeColumnLabel
             // 
-            this.LongitudeColumnLabel.Location = new System.Drawing.Point(12, 228);
+            this.LongitudeColumnLabel.Location = new System.Drawing.Point(12, 255);
             this.LongitudeColumnLabel.Name = "LongitudeColumnLabel";
             this.LongitudeColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.LongitudeColumnLabel.TabIndex = 25;
@@ -353,19 +356,57 @@ namespace Access_GeoGo.Forms
             // 
             // EngineHrsColumnLabel
             // 
-            this.EngineHrsColumnLabel.Location = new System.Drawing.Point(12, 174);
+            this.EngineHrsColumnLabel.Location = new System.Drawing.Point(12, 201);
             this.EngineHrsColumnLabel.Name = "EngineHrsColumnLabel";
             this.EngineHrsColumnLabel.Size = new System.Drawing.Size(103, 20);
             this.EngineHrsColumnLabel.TabIndex = 27;
             this.EngineHrsColumnLabel.Text = "Engine Hrs Column";
             this.EngineHrsColumnLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // GTStatusComboBox
+            // 
+            this.GTStatusComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.GTStatusComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.GTStatusComboBox.FormattingEnabled = true;
+            this.GTStatusComboBox.Location = new System.Drawing.Point(121, 92);
+            this.GTStatusComboBox.Name = "GTStatusComboBox";
+            this.GTStatusComboBox.Size = new System.Drawing.Size(138, 21);
+            this.GTStatusComboBox.TabIndex = 28;
+            this.GTStatusComboBox.SelectedIndexChanged += new System.EventHandler(this.CheckEnableControls);
+            // 
+            // GTStatusColumnLabel
+            // 
+            this.GTStatusColumnLabel.Location = new System.Drawing.Point(12, 93);
+            this.GTStatusColumnLabel.Name = "GTStatusColumnLabel";
+            this.GTStatusColumnLabel.Size = new System.Drawing.Size(103, 20);
+            this.GTStatusColumnLabel.TabIndex = 29;
+            this.GTStatusColumnLabel.Text = "GT Status Column";
+            this.GTStatusColumnLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // GTSValueComboBox
+            // 
+            this.GTSValueComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.GTSValueComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.GTSValueComboBox.FormattingEnabled = true;
+            this.GTSValueComboBox.Items.AddRange(new object[] {
+            "New",
+            "Test"});
+            this.GTSValueComboBox.Location = new System.Drawing.Point(265, 92);
+            this.GTSValueComboBox.Name = "GTSValueComboBox";
+            this.GTSValueComboBox.Size = new System.Drawing.Size(67, 21);
+            this.GTSValueComboBox.TabIndex = 30;
+            this.GTSValueComboBox.SelectedIndexChanged += new System.EventHandler(this.CheckEnableControls);
+            // 
             // DBParamsPage
             // 
             this.AcceptButton = this.DoneBtn;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(344, 367);
+            this.ClientSize = new System.Drawing.Size(344, 392);
+            this.Controls.Add(this.GTSValueComboBox);
+            this.Controls.Add(this.GTStatusComboBox);
+            this.Controls.Add(this.GTStatusColumnLabel);
             this.Controls.Add(this.EngineHrsComboBox);
             this.Controls.Add(this.EngineHrsColumnLabel);
             this.Controls.Add(this.LongitudeComboBox);
@@ -432,5 +473,8 @@ namespace Access_GeoGo.Forms
         private System.Windows.Forms.Label LongitudeColumnLabel;
         private System.Windows.Forms.ComboBox EngineHrsComboBox;
         private System.Windows.Forms.Label EngineHrsColumnLabel;
+        private System.Windows.Forms.ComboBox GTStatusComboBox;
+        private System.Windows.Forms.Label GTStatusColumnLabel;
+        private System.Windows.Forms.ComboBox GTSValueComboBox;
     }
 }

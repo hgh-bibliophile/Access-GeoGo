@@ -19,10 +19,12 @@ namespace Access_GeoGo.Data.Configuration {
         public class DBConfig
         {
             public string Table { get; set; } = null;
+            public string GTStatus_Default { get; set; } = "New";
             public DBColumnsConfig Columns { get; set; } = new DBColumnsConfig();
             public class DBColumnsConfig
             {
                 public string Id { get; set; } = null;
+                public string GTStatus { get; set; } = null;
                 public string Time { get; set; } = null;
                 public string Vehicle { get; set; } = null;
                 public string Odometer { get; set; } = null;

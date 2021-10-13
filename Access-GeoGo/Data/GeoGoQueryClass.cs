@@ -178,7 +178,7 @@ namespace Access_GeoGo.Data
             DataTable AccessDT = new DataTable();
             OleDbConnection con = new OleDbConnection(ConStr);
             OleDbDataReader reader;
-            string query = $"SELECT TOP {DBP.Limit} * FROM [{DBP.Table}] WHERE [{DBP.Odometer}] = 0;";
+            string query = $"SELECT TOP {DBP.Limit} * FROM [{DBP.Table}] WHERE [{DBP.GTStatus}] = '{DBP.GTS_Value}';";
             using (OleDbCommand cmd = new OleDbCommand(query, con))
             {
                 try
@@ -319,6 +319,7 @@ namespace Access_GeoGo.Data
             if (CT.IsCancellationRequested) return;
             DataTable dt = new DataTable();
             dt.Columns.Add("Entry ID");
+            dt.Columns.Add("Geotab Status");
             dt.Columns.Add("Time");
             dt.Columns.Add("Deivce Name");
             dt.Columns.Add("Odometer");
@@ -330,26 +331,28 @@ namespace Access_GeoGo.Data
             {
                 DataRow dr = dt.NewRow();
                 dr[0] = GeoGo.EntryID;
-                dr[1] = GeoGo.Timestamp.ToLocalTime();
-                dr[2] = GeoGo.DeviceName;
-                dr[3] = GeoGo.Miles;
-                dr[4] = GeoGo.Hours;
-                dr[5] = GeoGo.Latitude;
-                dr[6] = GeoGo.Longitude;
-                dr[7] = GeoGo.Driver;
+                dr[1] = GeoGo.GTStatus;
+                dr[2] = GeoGo.Timestamp.ToLocalTime();
+                dr[3] = GeoGo.DeviceName;
+                dr[4] = GeoGo.Miles;
+                dr[5] = GeoGo.Hours;
+                dr[6] = GeoGo.Latitude;
+                dr[7] = GeoGo.Longitude;
+                dr[8] = GeoGo.Driver;
                 dt.Rows.Add(dr);
             }
             foreach (DBEntry dbe in DeviceErrorList)
             {
                 DataRow dr = dt.NewRow();
                 dr[0] = dbe.Id;
-                dr[1] = dbe.Timestamp;
-                dr[2] = dbe.Vehicle;
-                dr[3] = -3;
-                dr[4] = 0;
-                dr[5] = "";
-                dr[6] = "";
-                dr[7] = "";
+                dr[1] = "GTNoDevice";
+                dr[2] = dbe.Timestamp;
+                dr[3] = dbe.Vehicle;
+                dr[4] = null;
+                dr[5] = null;
+                dr[6] = null;
+                dr[7] = null;
+                dr[8] = null;
                 dt.Rows.Add(dr);
             }
             GeoGoTable = dt;
@@ -371,13 +374,14 @@ namespace Access_GeoGo.Data
                     DataRowCollection drs = dt.Rows;
                     foreach (DataRow dr in drs)
                     {
-                        string oReading = dr.Field<string>("Odometer");
-                        string engineHrs = dr.Field<string>("Engine Hours");
+                        string gtStatus = dr.Field<string>("Geotab Status");
+                        string oReading = (dr.Field<string>("Odometer") == null) ? "NULL" : dr.Field<string>("Odometer");
+                        string engineHrs = (dr.Field<string>("Engine Hours") == null) ? "NULL" : dr.Field<string>("Engine Hours");
                         string latitude = dr.Field<string>("Latitude");
                         string longitude = dr.Field<string>("Longitude");
                         string driver = dr.Field<string>("Driver");
                         string entryId = dr.Field<string>("Entry ID");
-                        string query = $"UPDATE [{DBP.Table}] SET [{DBP.Odometer}] = '{oReading}', [{DBP.EngineHrs}] = '{engineHrs}',[{DBP.Latitude}] = '{latitude}',[{DBP.Longitude}] = '{longitude}',[{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};";
+                        string query = $"UPDATE [{DBP.Table}] SET [{DBP.GTStatus}] = '{gtStatus}', [{DBP.Odometer}] = {oReading}, [{DBP.EngineHrs}] = {engineHrs}, [{DBP.Latitude}] = '{latitude}', [{DBP.Longitude}] = '{longitude}', [{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};";
                         using (OleDbCommand cmd = new OleDbCommand(query, con, transaction))
                         {
                             updated += cmd.ExecuteNonQuery();

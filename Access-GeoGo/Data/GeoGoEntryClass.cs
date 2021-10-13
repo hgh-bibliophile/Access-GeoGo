@@ -61,9 +61,13 @@ namespace Access_GeoGo.Data
         /// </summary>
         public readonly int EntryID;
         /// <summary>
+        /// The Geotab status of the db entry
+        /// </summary>
+        public readonly string GTStatus;
+        /// <summary>
         /// The date/timestamp of the entry & readings
         /// </summary>
-        public readonly DateTime Timestamp;  //MUST BE EQUAL
+        public readonly DateTime Timestamp;  //TODO: ?? MUST BE EQUAL ??
         /// <summary>
         /// The name of the device/vehicle
         /// </summary>
@@ -97,22 +101,18 @@ namespace Access_GeoGo.Data
             EntryID = data.Entry.Id;
             Timestamp = data.Entry.Timestamp;
             DeviceName = data.Entry.Vehicle;
+            Driver = data.Driver;
             Latitude = data.DeviceLocation.Latitude.ToString();
             Longitude = data.DeviceLocation.Longitude.ToString();
-            Location = $"{Latitude}, {Longitude}";
-            Driver = data.Driver;
-            //Miles = data.DeviceMileage.Data.ToString();
-            // Hours = data.DeviceEngineHours.Data.ToString();
+            Location = $"{Latitude}, {Longitude}";            
             
             double miles = Convert.ToDouble(data.DeviceMileage.Data) / Convert.ToDouble(1609.34);
             decimal hours = Convert.ToDecimal(data.DeviceEngineHours.Data) / Convert.ToDecimal(3600);
             double rMiles = Math.Round(miles);
             decimal rHours = Math.Round(hours);
-            //Miles = String.Format("{0:#,###0}", rMiles);
-            Miles = rMiles.ToString();
-            if (rMiles == 0)
-                Miles = (-2).ToString();
-            Hours = string.Format("{0:#,###0}", rHours);
+            Miles = (rMiles == 0) ? null : rMiles.ToString();
+            Hours = (rHours == 0) ? null : rHours.ToString();
+            GTStatus = (rMiles == 0) ? "GTDeviceNoOdo" : "GTOdometer";            
         }
     }
 }
