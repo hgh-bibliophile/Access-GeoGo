@@ -112,7 +112,7 @@ namespace Access_GeoGo.Data
             Miles = rMiles.ToString();
             if (rMiles == 0)
                 Miles = (-2).ToString();
-            Hours = String.Format("{0:#,###0}", rHours);
+            Hours = string.Format("{0:#,###0}", rHours);
         }
     }
 }

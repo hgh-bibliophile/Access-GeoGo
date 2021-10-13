@@ -209,13 +209,14 @@ namespace Access_GeoGo.Data
             foreach (DataRow row in AccessDBEntries)
             {
                 string devNameField = !string.IsNullOrEmpty(row.Field<string>(DBP.Vehicle)) ? row.Field<string>(DBP.Vehicle) : "";
+                //Remove vehicle name suffix that matches the pattern space#* (e.g. 'Sara 04' to 'Sara')
                 string devName = Regex.Replace(devNameField, @"\s\d*", "");
                 if (string.IsNullOrEmpty(devName)) continue;
                 DBEntry dbEntry = new DBEntry(new DBEntryParams
                 {
                     Id = row.Field<int>(id),
                     Vehicle = devName,
-                    Timestamp = row.Field<DateTime>(time)
+                    Timestamp = row.Field<DateTime>(time).ToUniversalTime()
                 });
                 if (_deviceNameCache.TryGetValue(devName, out Id devId))
                     DeviceEntriesList.Add(new DeviceEntry(dbEntry, _deviceCache[devId]));
@@ -329,7 +330,7 @@ namespace Access_GeoGo.Data
             {
                 DataRow dr = dt.NewRow();
                 dr[0] = GeoGo.EntryID;
-                dr[1] = GeoGo.Timestamp;
+                dr[1] = GeoGo.Timestamp.ToLocalTime();
                 dr[2] = GeoGo.DeviceName;
                 dr[3] = GeoGo.Miles;
                 dr[4] = GeoGo.Hours;

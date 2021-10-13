@@ -87,7 +87,7 @@ namespace Access_GeoGo.Data.Geotab
         public class MultiCallList<TType>
         {
             private readonly List<object> CallsList;
-            static List<object> ResultsList;
+            List<object> ResultsList;
             public MultiCallList()
             {
                 CallsList = new List<object> { };

@@ -7,18 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Access-GeoGo", "Access-GeoG
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Daddy-USB|Any CPU = Daddy-USB|Any CPU
-		Daddy-USB|x64 = Daddy-USB|x64
+		Daddy|Any CPU = Daddy|Any CPU
+		Daddy|x64 = Daddy|x64
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy-USB|Any CPU.ActiveCfg = Daddy-USB|Any CPU
-		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy-USB|Any CPU.Build.0 = Daddy-USB|Any CPU
-		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy-USB|x64.ActiveCfg = Daddy-USB|Any CPU
-		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy-USB|x64.Build.0 = Daddy-USB|Any CPU
+		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy|Any CPU.ActiveCfg = Daddy|Any CPU
+		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy|Any CPU.Build.0 = Daddy|Any CPU
+		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy|x64.ActiveCfg = Daddy|Any CPU
+		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Daddy|x64.Build.0 = Daddy|Any CPU
 		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1350ECC2-9A07-417F-A196-953D7A6A59E4}.Debug|x64.ActiveCfg = Debug|Any CPU
