@@ -7,9 +7,9 @@ namespace Access_GeoGo.Data
 {
     public struct DBEntryParams
     {
-        public string Vehicle { get; set; }
         public int Id { get; set; }
         public DateTime Timestamp { get; set; }
+        public string Vehicle { get; set; }
     }
 
     public class DBEntry

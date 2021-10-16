@@ -36,6 +36,18 @@ namespace Access_GeoGo.Data.Geotab
             }
         }
 
+        //TODO: Add Code Documentation
+        public async Task<TResult> Get<TResult, TType>(string GetMethod, object Params = null)
+        {
+            TResult TReturn = default;
+            try
+            {
+                TReturn = await API.CallAsync<TResult>(GetMethod, typeof(TType), Params, CT);
+            }
+            catch (OperationCanceledException) { }
+            return TReturn;
+        }
+
         /// <summary>
         /// Gets a dictionary of all of the items of a specified GeoTab object class.
         /// </summary>
@@ -48,7 +60,7 @@ namespace Access_GeoGo.Data.Geotab
             Dictionary<TKey, TSource> TSourceDictionary = null;
             try
             {
-                var TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
+                List<TSource> TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
                 TSourceDictionary = TSourceList.ToDictionary(s => getKey(s));
             }
             catch (OperationCanceledException) { }
@@ -69,23 +81,11 @@ namespace Access_GeoGo.Data.Geotab
             Dictionary<TKey, TValue> TSourceDictionary = null;
             try
             {
-                var TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
+                List<TSource> TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
                 TSourceDictionary = TSourceList.ToDictionary(s => getKey(s), s => getValue(s));
             }
             catch (OperationCanceledException) { }
             return TSourceDictionary;
-        }
-
-        //TODO: Add Code Documentation
-        public async Task<TResult> Get<TResult, TType>(string GetMethod, object Params = null)
-        {
-            TResult TReturn = default;
-            try
-            {
-                TReturn = await API.CallAsync<TResult>(GetMethod, typeof(TType), Params, CT);
-            }
-            catch (OperationCanceledException) { }
-            return TReturn;
         }
 
         public class MultiCallList<TType>
@@ -105,22 +105,12 @@ namespace Access_GeoGo.Data.Geotab
                 List<TType> TResultList = null;
                 try
                 {
-                    var TGetResults = await API.MultiCallAsync(CallsList.ToArray());
+                    List<object> TGetResults = await API.MultiCallAsync(CallsList.ToArray());
                     TResultList = (from List<TType> TResults in TGetResults
                                    select TResults[0]).ToList();
                 }
                 catch (OperationCanceledException) { }
                 return TResultList;
-            }
-
-            public async Task<MultiCallList<TType>> MakeCall()
-            {
-                try
-                {
-                    ResultsList = await API.MultiCallAsync(CallsList.ToArray());
-                }
-                catch (OperationCanceledException) { }
-                return this;
             }
 
             public List<TType> GetResults()
@@ -137,6 +127,16 @@ namespace Access_GeoGo.Data.Geotab
                             TResultList.Add(default);
                     }
                 return TResultList;
+            }
+
+            public async Task<MultiCallList<TType>> MakeCall()
+            {
+                try
+                {
+                    ResultsList = await API.MultiCallAsync(CallsList.ToArray());
+                }
+                catch (OperationCanceledException) { }
+                return this;
             }
         }
     }

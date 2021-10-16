@@ -10,19 +10,6 @@ namespace Access_GeoGo.Forms
 
         public MenuPage() => InitializeComponent();
 
-        private void AuthenticatePageButton_Click(object sender, EventArgs e)
-        {
-            auth = new AuthenticatePage();
-            auth.AuthComplete += new AuthenticatePage.AuthCompleteHandler(FinishAuth);
-            auth.Show();
-        }
-
-        private void UpdateButton_Click(object sender, EventArgs e)
-        {
-            if (!Program.CheckAuth()) return;
-            new DBParamsPage().Show();
-        }
-
         public void FinishAuth(API authAPI, bool authStatus)
         {
             auth.Close();
@@ -32,6 +19,19 @@ namespace Access_GeoGo.Forms
             Program.AuthStatus = authStatus;
         }
 
+        private void AuthenticatePageButton_Click(object sender, EventArgs e)
+        {
+            auth = new AuthenticatePage();
+            auth.AuthComplete += new AuthenticatePage.AuthCompleteHandler(FinishAuth);
+            auth.Show();
+        }
+
+        private void FaultCodesBtn_Click(object sender, EventArgs e)
+        {
+            if (!Program.CheckAuth()) return;
+            new FaultCodesPage().Show();
+        }
+
         private void TestPageButton_Click(object sender, EventArgs e)
         {
             if (!Program.CheckAuth()) return;
@@ -39,10 +39,10 @@ namespace Access_GeoGo.Forms
             test.Show();*/
         }
 
-        private void FaultCodesBtn_Click(object sender, EventArgs e)
+        private void UpdateButton_Click(object sender, EventArgs e)
         {
             if (!Program.CheckAuth()) return;
-            new FaultCodesPage().Show();
+            new DBParamsPage().Show();
         }
     }
 }

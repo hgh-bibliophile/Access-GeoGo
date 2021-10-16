@@ -11,9 +11,9 @@ namespace Access_GeoGo.Forms
     public partial class FuelTransPage : Form
     {
         public DBParamsPage DBP;
-        private GeoGoQuery GeoGoQuery;
-        private CancellationTokenSource CT;
         private static string db;
+        private CancellationTokenSource CT;
+        private GeoGoQuery GeoGoQuery;
 
         public FuelTransPage(DBParamsPage dbp)
         {
@@ -22,12 +22,15 @@ namespace Access_GeoGo.Forms
             InitializeComponent();
         }
 
-        /// <summary>
-        /// On load, run the GeoTab query
-        /// </summary>
-        private async void FuelTransPage_Load(object sender, EventArgs e) => await ExecuteQuery();
-
-        private async void NextBtn_Click(object sender, EventArgs e) => await ExecuteQuery();
+        protected override bool ProcessDialogKey(Keys keyData)
+        {
+            if (ModifierKeys == Keys.None && keyData == Keys.Escape)
+            {
+                Close();
+                return true;
+            }
+            return base.ProcessDialogKey(keyData);
+        }
 
         private async Task ExecuteQuery()
         {
@@ -48,14 +51,21 @@ namespace Access_GeoGo.Forms
             CT = null;
         }
 
-        private void InsertBtn_Click(object sender, EventArgs e) => GeoGoQuery.UpdateAccessDB();
-
-        private void Preview_Click(object sender, EventArgs e) => Process.Start(@db);
+        /// <summary>
+        /// On load, run the GeoTab query
+        /// </summary>
+        private async void FuelTransPage_Load(object sender, EventArgs e) => await ExecuteQuery();
 
         private void GeoGoDataView_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             ClientSize = new Size(Math.Max(GeoGoDataView.Columns.GetColumnsWidth(DataGridViewElementStates.Visible) + 20, ClientSize.Width), ClientSize.Height);
             MinimumSize = SizeFromClientSize(ClientSize);
+        }
+
+        private void GeoGoPage_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         private void GeoGoPage_FormClosing(object sender, FormClosingEventArgs e)
@@ -68,20 +78,10 @@ namespace Access_GeoGo.Forms
             GeoGoQuery.Dispose();
         }
 
-        protected override bool ProcessDialogKey(Keys keyData)
-        {
-            if (ModifierKeys == Keys.None && keyData == Keys.Escape)
-            {
-                Close();
-                return true;
-            }
-            return base.ProcessDialogKey(keyData);
-        }
+        private void InsertBtn_Click(object sender, EventArgs e) => GeoGoQuery.UpdateAccessDB();
 
-        private void GeoGoPage_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
+        private async void NextBtn_Click(object sender, EventArgs e) => await ExecuteQuery();
+
+        private void Preview_Click(object sender, EventArgs e) => Process.Start(@db);
     }
 }

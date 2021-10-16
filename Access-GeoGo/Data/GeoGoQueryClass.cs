@@ -303,15 +303,15 @@ namespace Access_GeoGo.Data
             string id = DBP.Id;
             string time = DBP.Time;
             foreach ((string devName, DBEntry dbEntry) in from DataRow row in AccessDBEntries
-                                               let devNameField = row.Field<string>(DBP.Vehicle) ?? ""// Get Vehicle field; if null, set to ""
-                                               let devName = Regex.Replace(devNameField, @"\s\d*", "")//Remove vehicle name suffix that matches the pattern space#* (e.g. 'Sara 04' to 'Sara')
-                                               let dbEntry = new DBEntry(new DBEntryParams
-                                               {
-                                                   Id = row.Field<int>(id),
-                                                   Vehicle = devName,
-                                                   Timestamp = row.Field<DateTime>(time).ToUniversalTime()
-                                               })
-                                               select (devName, dbEntry))
+                    let devNameField = row.Field<string>(DBP.Vehicle) ?? ""// Get Vehicle field; if null, set to ""
+                    let devName = Regex.Replace(devNameField, @"\s\d*", "")//Remove vehicle name suffix that matches the pattern space#* (e.g. 'Sara 04' to 'Sara')
+                    let dbEntry = new DBEntry(new DBEntryParams
+                    {
+                        Id = row.Field<int>(id),
+                        Vehicle = devName,
+                        Timestamp = row.Field<DateTime>(time).ToUniversalTime()
+                    })
+                    select (devName, dbEntry))
             {
                 if (_deviceNameCache.TryGetValue(devName, out Id devId))
                     DeviceEntriesList.Add(new DeviceEntry(dbEntry, _deviceCache[devId]));
@@ -330,9 +330,9 @@ namespace Access_GeoGo.Data
             locationCalls = new GeotabAPI.MultiCallList<LogRecord>();
             driverCalls = new GeotabAPI.MultiCallList<DriverChange>();
             foreach ((Device device, DBEntry entry) in from DeviceEntry deviceEntry in DeviceEntriesList
-                                            let device = deviceEntry.Device
-                                            let entry = deviceEntry.Entry
-                                            select (device, entry))
+                    let device = deviceEntry.Device
+                    let entry = deviceEntry.Entry
+                    select (device, entry))
             {
                 odometerCalls.AddCall("Get", new
                 {
@@ -439,8 +439,8 @@ namespace Access_GeoGo.Data
             dt.Columns.Add("Longitude");
             dt.Columns.Add("Driver");
             foreach ((GeoGo_Entry GeoGo, DataRow dr) in from GeoGo_Entry GeoGo in GeoGoEntries
-                                        let dr = dt.NewRow()
-                                        select (GeoGo, dr))
+                    let dr = dt.NewRow()
+                    select (GeoGo, dr))
             {
                 dr[0] = GeoGo.EntryID;
                 dr[1] = GeoGo.GTStatus;
@@ -455,8 +455,8 @@ namespace Access_GeoGo.Data
             }
 
             foreach ((DBEntry dbe, DataRow dr) in from DBEntry dbe in DeviceErrorList
-                                      let dr = dt.NewRow()
-                                      select (dbe, dr))
+                    let dr = dt.NewRow()
+                    select (dbe, dr))
             {
                 dr[0] = dbe.Id;
                 dr[1] = "GTNoDevice";
@@ -488,15 +488,15 @@ namespace Access_GeoGo.Data
                     con.Open();
                     OleDbTransaction transaction = con.BeginTransaction();
                     foreach (string query in from DataRow dr in dt.Rows
-                                          let gtStatus = dr.Field<string>("Geotab Status")
-                                          let oReading = dr.Field<string>("Odometer") ?? "NULL"
-                                          let engineHrs = dr.Field<string>("Engine Hours") ?? "NULL"
-                                          let latitude = dr.Field<string>("Latitude")
-                                          let longitude = dr.Field<string>("Longitude")
-                                          let driver = dr.Field<string>("Driver")
-                                          let entryId = dr.Field<string>("Entry ID")
-                                          let query = $"UPDATE [{DBP.Table}] SET [{DBP.GTStatus}] = '{gtStatus}', [{DBP.Odometer}] = {oReading}, [{DBP.EngineHrs}] = {engineHrs}, [{DBP.Latitude}] = '{latitude}', [{DBP.Longitude}] = '{longitude}', [{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};"
-                                          select query)
+                            let gtStatus = dr.Field<string>("Geotab Status")
+                            let oReading = dr.Field<string>("Odometer") ?? "NULL"
+                            let engineHrs = dr.Field<string>("Engine Hours") ?? "NULL"
+                            let latitude = dr.Field<string>("Latitude")
+                            let longitude = dr.Field<string>("Longitude")
+                            let driver = dr.Field<string>("Driver")
+                            let entryId = dr.Field<string>("Entry ID")
+                            let query = $"UPDATE [{DBP.Table}] SET [{DBP.GTStatus}] = '{gtStatus}', [{DBP.Odometer}] = {oReading}, [{DBP.EngineHrs}] = {engineHrs}, [{DBP.Latitude}] = '{latitude}', [{DBP.Longitude}] = '{longitude}', [{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};"
+                            select query)
                         using (OleDbCommand cmd = new OleDbCommand(query, con, transaction))
                         {
                             updated += cmd.ExecuteNonQuery();

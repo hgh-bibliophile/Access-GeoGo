@@ -64,9 +64,7 @@ namespace Access_GeoGo.Data.Configuration
             set
             {
                 if (BaseGet(index) != null)
-                {
                     BaseRemoveAt(index);
-                }
                 BaseAdd(index, value);
             }
         }

@@ -113,9 +113,7 @@ namespace Access_GeoGo.Forms
                                                        let columnName = column[3].ToString()
                                                        from ComboBox cBox in _columnCBoxes
                                                        select (columnName, cBox))
-                    {
                         cBox.Items.Add(columnName);
-                    }
                 }
                 catch (Exception err)
                 {
@@ -176,6 +174,7 @@ namespace Access_GeoGo.Forms
             Longitude = LongitudeComboBox.Text;
             Driver = DriverComboBox.Text;
             string msg = $"Table: {Table}\nGTS Record Type: {GTS_Value}\n\nId: {Id}\nGT Status: {GTStatus}\nTime: {Time}\nVehicle: {Vehicle}\nOdometer: {Odometer}\nEngine Hrs: {EngineHrs}\nLatitude: {Latitude}\nLongitude: {Longitude}\nDriver: {Driver}";
+
             DialogResult selectionOK = MessageBox.Show(msg, "Verify Selections", MessageBoxButtons.OKCancel);
             if (!Program.CheckAuth() || selectionOK == DialogResult.Cancel) return;
             new FuelTransPage(this).Show();
