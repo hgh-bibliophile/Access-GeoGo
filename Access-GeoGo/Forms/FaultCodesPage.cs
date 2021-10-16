@@ -1,32 +1,34 @@
-﻿using Geotab.Checkmate.ObjectModel;
+﻿using Access_GeoGo.Data.Geotab;
+using Geotab.Checkmate.ObjectModel;
 using Geotab.Checkmate.ObjectModel.Engine;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Threading;
-using Access_GeoGo.Data.Geotab;
 
 namespace Access_GeoGo.Forms
-{    
+{
     public partial class FaultCodesPage : Form
     {
-        static Dictionary<Id, Device> _deviceCache;
-        static Dictionary<string, Id> _deviceNameCache;
-        static Dictionary<Id, Controller> _controllerCache;
-        static Dictionary<Id, Diagnostic> _diagnosticCache;
-        static Dictionary<Id, FailureMode> _fmiCache;
-        static GeotabAPI GeotabAPI;
-        private CancellationTokenSource CTS;
+        private static Dictionary<Id, Device> _deviceCache;
+        private static Dictionary<string, Id> _deviceNameCache;
+        private static Dictionary<Id, Controller> _controllerCache;
+        private static Dictionary<Id, Diagnostic> _diagnosticCache;
+        private static Dictionary<Id, FailureMode> _fmiCache;
+        private static GeotabAPI GeotabAPI;
+        private readonly CancellationTokenSource CTS;
+
         public FaultCodesPage()
         {
             InitializeComponent();
             CTS = new CancellationTokenSource();
             GeotabAPI = new GeotabAPI(Program.API, CTS.Token);
         }
+
         private async void ResultsBtn_Click(object sender, EventArgs e)
         {
             List<FaultData> FaultData = await GetFaultCodes();
@@ -34,34 +36,36 @@ namespace Access_GeoGo.Forms
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
+
         private async void GetFeedBtn_Click(object sender, EventArgs e)
         {
             FeedResult<FaultData> FaultData = await GetFaultFeed();
             DisplayCodes(FaultData);
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            return;
         }
+
         private async void FaultCodesPage_Load(object sender, EventArgs e)
-        {            
+        {
             await Task.WhenAll(GetDeviceList(), GetCachedData());
             GetFeedBtn.Enabled = true;
             SearchBtn.Enabled = true;
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            return;
         }
+
         private async Task GetCachedData()
         {
             var controller = GeotabAPI.GetDictionary<Controller, Id>(c => c.Id);
             var diagnostic = GeotabAPI.GetDictionary<Diagnostic, Id>(c => c.Id);
             var fmi = GeotabAPI.GetDictionary<FailureMode, Id>(f => f.Id);
-            await Task.WhenAll(controller, diagnostic, diagnostic);
-            _diagnosticCache = await diagnostic;
-            _controllerCache = await controller;
-            _fmiCache = await fmi;
+            await Task.WhenAll(controller, diagnostic, fmi);
+            _diagnosticCache = diagnostic.Result;
+            _controllerCache = controller.Result;
+            _fmiCache = fmi.Result;
             return;
         }
+
         private async Task GetDeviceList()
         {
             _deviceCache = await GeotabAPI.GetDictionary<Device, Id>(d => d.Id);
@@ -69,41 +73,42 @@ namespace Access_GeoGo.Forms
             DeviceComboBox.Items.AddRange(_deviceNameCache.Keys.ToArray());
             return;
         }
+
         private async Task<FeedResult<FaultData>> GetFaultFeed()
         {
             var FaultData = Convert.ToInt64(Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token);
-            FeedResult<FaultData> FeedResults = await GeotabAPI.Get<FeedResult<FaultData>, FaultData>("GetFeed", new { 
+            FeedResult<FaultData> FeedResults = await GeotabAPI.Get<FeedResult<FaultData>, FaultData>("GetFeed", new
+            {
                 resultsLimit = 10000,
-                fromVersion = FaultData });
+                fromVersion = FaultData
+            });
             Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token = FeedResults.ToVersion.ToString();
             Program.CONFIG.APP_CONFIG.Save();
             return FeedResults;
         }
+
         private async Task<List<FaultData>> GetFaultCodes()
         {
-            FaultDataSearch faultDataSearch = new FaultDataSearch { };
+            FaultDataSearch faultDataSearch = new FaultDataSearch();
             if (FromDatePicker.Checked) faultDataSearch.FromDate = FromDatePicker.Value;
             if (ToDatePicker.Checked) faultDataSearch.ToDate = ToDatePicker.Value;
             if (!string.IsNullOrEmpty(DeviceComboBox.Text))
-            {
                 faultDataSearch.DeviceSearch = new DeviceSearch
-                    {
-                        Id = _deviceNameCache[DeviceComboBox.Text]
-                    }; 
-            }
-            List<FaultData> Codes = await GeotabAPI.Get<List<FaultData>, FaultData>("Get", new
+                {
+                    Id = _deviceNameCache[DeviceComboBox.Text]
+                };
+            return await GeotabAPI.Get<List<FaultData>, FaultData>("Get", new
             {
                 resultsLimit = LimitSelection.Value,
                 search = faultDataSearch
             });
-            return Codes;
         }
+
         private void FaultCodeView_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             ClientSize = new Size(Math.Max(FaultCodeView.Columns.GetColumnsWidth(DataGridViewElementStates.Visible) + 20, ClientSize.Width), ClientSize.Height);
             MinimumSize = SizeFromClientSize(ClientSize);
         }
-
 
         private void DisplayCodes(List<FaultData> faultData)
         {
@@ -121,9 +126,9 @@ namespace Access_GeoGo.Forms
                 dr = FaultCodeRow(dr, code);
                 dt.Rows.Add(dr);
             }
-            DataTable FaultDataTable = dt;
-            FaultCodeView.DataSource = FaultDataTable;
+            FaultCodeView.DataSource = dt;
         }
+
         private void DisplayCodes(FeedResult<FaultData> faultData)
         {
             DataTable dt = new DataTable();
@@ -141,18 +146,17 @@ namespace Access_GeoGo.Forms
                 dr = FaultCodeRow(dr, code);
                 dt.Rows.Add(dr);
             }
-            DataTable FaultDataTable = dt;
-            FaultCodeView.DataSource = FaultDataTable;
+            FaultCodeView.DataSource = dt;
         }
+
         private DataRow FaultCodeRow(DataRow dr, FaultData fd)
         {
             fd.Diagnostic = _diagnosticCache[fd.Diagnostic.Id];
             fd.Device = _deviceCache[fd.Device.Id];
             fd.Controller = _controllerCache[fd.Controller.Id];
             fd.FailureMode = _fmiCache[fd.FailureMode.Id];
-            var test = (int)fd.Diagnostic.Code;
             dr[0] = fd.Device.Name;
-            dr[1] = test.ToString("X");
+            dr[1] = ((int)fd.Diagnostic.Code).ToString("X");
             dr[2] = fd.Diagnostic.Name;
             dr[3] = fd.Controller.Name;
             dr[4] = fd.FailureMode.Name;
@@ -161,6 +165,7 @@ namespace Access_GeoGo.Forms
             return dr;
         }
     }
+
     /*
     public class GeoGoCache<TItem>
     {
@@ -188,7 +193,6 @@ namespace Access_GeoGo.Forms
             }
             return cacheEntry;
         }
-
     }
     public class GeoGoDeviceCache
     {
@@ -231,7 +235,6 @@ namespace Access_GeoGo.Forms
                 // Save data in cache.
                 _cache.Set(cacheEntry.Id, cacheEntry, cacheEntryOptions);
             }
-            
         }
         static void GiveMeTheDate(Action<int, string> action)
         {
@@ -244,7 +247,6 @@ namespace Access_GeoGo.Forms
         {
             action();
         }
-
     }
 
     public static class Caching
@@ -272,6 +274,7 @@ namespace Access_GeoGo.Forms
         }
     }*/
 }
+
 /*
                 DataRow dr = dt.NewRow();
                 dr[0] = code.Device.Id;
@@ -294,7 +297,6 @@ namespace Access_GeoGo.Forms
 }, function (devices) {
     console.log(devices);
     GetData(devices);
-    
 });
 
 function GetData(dev) {
@@ -332,8 +334,8 @@ function GetData(dev) {
                             id: d.failureMode.id
                         },
                         resultsLimit: 1}]);
-            } 
-            
+            }
+
             api.multiCall(calls, function (results) {
                 results.push(d);
                 console.log(results);
@@ -349,11 +351,11 @@ function GetData(dev) {
                     fmi = "Not Given";
                     fmiId = "-";
                 }
-                
+
                 controller = contrObj[0].name;
-                
-                console.log(`${device} | ${date} 
-                | ${description} | ${fmi} 
+
+                console.log(`${device} | ${date}
+                | ${description} | ${fmi}
                 | ${fmiId} | ${source} | ${controller}
                 | ${code}`);
             }, function (err) {
@@ -362,7 +364,6 @@ function GetData(dev) {
         }, function (err) {
             console.log("Error:" + err);
         });
-
     })
 }
 */

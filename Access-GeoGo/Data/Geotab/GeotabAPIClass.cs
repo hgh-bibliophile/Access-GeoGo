@@ -5,36 +5,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Access_GeoGo.Data.Geotab
 {
-    class GeotabAPI : IDisposable
+    internal class GeotabAPI : IDisposable
     {
-        static API API;
-        static CancellationToken CT;
-        private bool disposed = false;
+        private static API API;
+        private static CancellationToken CT;
+        private bool disposed;
+
         public GeotabAPI(API api, CancellationToken ct)
         {
             API = api;
             CT = ct;
         }
+
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         protected virtual void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!disposed)
             {
-                if (disposing)
-                {
-                }
+                if (disposing) { }
                 API = null;
                 disposed = true;
             }
         }
+
         /// <summary>
         /// Gets a dictionary of all of the items of a specified GeoTab object class.
         /// </summary>
@@ -53,6 +54,7 @@ namespace Access_GeoGo.Data.Geotab
             catch (OperationCanceledException) { }
             return TSourceDictionary;
         }
+
         /// <summary>
         /// Gets a dictionary of all of the items of a specified GeoTab object class.
         /// </summary>
@@ -73,6 +75,7 @@ namespace Access_GeoGo.Data.Geotab
             catch (OperationCanceledException) { }
             return TSourceDictionary;
         }
+
         //TODO: Add Code Documentation
         public async Task<TResult> Get<TResult, TType>(string GetMethod, object Params = null)
         {
@@ -84,33 +87,32 @@ namespace Access_GeoGo.Data.Geotab
             catch (OperationCanceledException) { }
             return TReturn;
         }
+
         public class MultiCallList<TType>
         {
             private readonly List<object> CallsList;
-            List<object> ResultsList;
-            public MultiCallList()
-            {
-                CallsList = new List<object> { };
-            }
+            private List<object> ResultsList;
+
+            public MultiCallList() => CallsList = new List<object>();
+
             public void AddCall(string GetMethod, object Params = null)
             {
                 CallsList.Add(new object[] { GetMethod, typeof(TType), Params, CT, typeof(List<TType>) });
             }
+
             public async Task<List<TType>> GetCallResults()
             {
                 List<TType> TResultList = null;
                 try
                 {
                     var TGetResults = await API.MultiCallAsync(CallsList.ToArray());
-                    TResultList = new List<TType> { };
-                    foreach (List<TType> TResults in TGetResults)
-                    {
-                        TResultList.Add(TResults[0]);
-                    }
+                    TResultList = (from List<TType> TResults in TGetResults
+                                   select TResults[0]).ToList();
                 }
                 catch (OperationCanceledException) { }
                 return TResultList;
             }
+
             public async Task<MultiCallList<TType>> MakeCall()
             {
                 try
@@ -120,24 +122,20 @@ namespace Access_GeoGo.Data.Geotab
                 catch (OperationCanceledException) { }
                 return this;
             }
+
             public List<TType> GetResults()
             {
-                List<TType> TResultList = new List<TType> { };
-                List<Device> dt = new List<Device> { };
-                dt.Add(null);
+                List<TType> TResultList = new List<TType>();
+                //x List<Device> dt = new List<Device>();
+                //x dt.Add(null);
                 if (!(ResultsList is null))
-                {
                     foreach (List<TType> TResults in ResultsList)
-                    {   
+                    {
                         if (TResults.Count >= 1)
-                        {
                             TResultList.Add(TResults[0]);
-                        } else
-                        {
-                            TResultList.Add(default(TType));
-                        }
+                        else
+                            TResultList.Add(default);
                     }
-                }
                 return TResultList;
             }
         }

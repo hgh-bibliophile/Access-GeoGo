@@ -118,7 +118,7 @@
             this.VersionLabel.Name = "VersionLabel";
             this.VersionLabel.Size = new System.Drawing.Size(168, 15);
             this.VersionLabel.TabIndex = 14;
-            this.VersionLabel.Text = "GeoGo Version: 3.2 | © 10.2021";
+            this.VersionLabel.Text = "GeoGo Version: 4.0 | © 10.2021";
             // 
             // FaultCodesBtn
             // 
