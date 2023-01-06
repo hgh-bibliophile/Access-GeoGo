@@ -5,14 +5,14 @@ using System.Text.RegularExpressions;
 
 namespace Access_GeoGo.Data
 {
-    public struct DBEntryParams
+    public struct DbEntryParams
     {
         public int Id { get; set; }
         public DateTime Timestamp { get; set; }
         public string Vehicle { get; set; }
     }
 
-    public class DBEntry
+    public class DbEntry
     {
         /// <summary>
         /// The db entry id
@@ -30,10 +30,10 @@ namespace Access_GeoGo.Data
         public readonly string Vehicle;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DBEntry"/> class.
+        /// Initializes a new instance of the <see cref="DbEntry"/> class.
         /// </summary>
-        /// <param name="entry">The <see cref="DBEntryParams"/> object</param>
-        public DBEntry(DBEntryParams entry)
+        /// <param name="entry">The <see cref="DbEntryParams"/> object</param>
+        public DbEntry(DbEntryParams entry)
         {
             Id = entry.Id;
             Timestamp = entry.Timestamp;
@@ -43,19 +43,19 @@ namespace Access_GeoGo.Data
 
     internal class DeviceEntry
     {
-        public readonly DBEntry Entry;
+        public readonly DbEntry Entry;
         public readonly Device Device;
 
-        public DeviceEntry(DBEntry entry, Device device)
+        public DeviceEntry(DbEntry entry, Device device)
         {
             Entry = entry;
             Device = device;
         }
     }
 
-    public struct GeoGo_EntryData
+    public struct GeoGoEntryData
     {
-        public DBEntry Entry { get; set; }
+        public DbEntry Entry { get; set; }
         public Device Device { get; set; }
         public StatusData DeviceMileage { get; set; }
         public StatusData DeviceEngineHours { get; set; }
@@ -63,17 +63,17 @@ namespace Access_GeoGo.Data
         public string Driver { get; set; }
     }
 
-    internal class GeoGo_Entry
+    internal class GeoGoEntry
     {
         /// <summary>
         /// The unique ID of the db entry
         /// </summary>
-        public readonly int EntryID;
+        public readonly int EntryId;
 
         /// <summary>
         /// The Geotab status of the db entry
         /// </summary>
-        public readonly string GTStatus;
+        public readonly string GtStatus;
 
         /// <summary>
         /// The date/timestamp of the entry & readings
@@ -114,10 +114,10 @@ namespace Access_GeoGo.Data
         /// The current driver of the device at the date/timestamp of the entry
         /// </summary>
         public readonly string Driver;
-
-        public GeoGo_Entry(GeoGo_EntryData data)
+        
+        public GeoGoEntry(GeoGoEntryData data)
         {
-            EntryID = data.Entry.Id;
+            EntryId = data.Entry.Id;
             Timestamp = data.Entry.Timestamp;
             DeviceName = data.Entry.Vehicle;
             Driver = data.Driver;
@@ -125,13 +125,13 @@ namespace Access_GeoGo.Data
             Longitude = data.DeviceLocation.Longitude.ToString();
             Location = $"{Latitude}, {Longitude}";
 
-            double miles = Convert.ToDouble(data.DeviceMileage.Data) / Convert.ToDouble(1609.34);
+            double miles = Convert.ToDouble(data.DeviceMileage.Data) / Convert.ToDouble(1609.344);
             decimal hours = Convert.ToDecimal(data.DeviceEngineHours.Data) / Convert.ToDecimal(3600);
             double rMiles = Math.Round(miles);
             decimal rHours = Math.Round(hours);
-            Miles = (rMiles == 0) ? null : rMiles.ToString();
-            Hours = (rHours == 0) ? null : rHours.ToString();
-            GTStatus = (rMiles == 0) ? "GTDeviceNoOdo" : "GTOdometer";
+            Miles = rMiles == 0 ? null : rMiles.ToString();
+            Hours = rHours == 0 ? null : rHours.ToString();
+            GtStatus = rMiles == 0 ? "GTDeviceNoOdo" : "GTOdometer";
         }
     }
 }

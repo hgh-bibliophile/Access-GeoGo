@@ -20,32 +20,32 @@ namespace Access_GeoGo.Data
         /// <summary>
         /// Query results window (<see cref="FuelTransPage"/>) instance
         /// </summary>
-        private FuelTransPage GGP;
+        private FuelTransPage _ggp;
 
         /// <summary>
         /// Database params window (<see cref=DBParamsPage"/>) instance
         /// </summary>
-        private DBParamsPage DBP;
+        private DbParamsPage _dbp;
 
         /// <summary>
-        /// Connection string for MS Access fuel database - set by <see cref="DBParamsPage.DBFileNameBox"/>
+        /// Connection string for MS Access fuel database - set by <see cref="DbParamsPage.DBFileNameBox"/>
         /// </summary>
-        private string ConStr;
+        private string _conStr;
 
         /// <summary>
         /// Cancellation Token
         /// </summary>
-        private CancellationToken CT;
+        private CancellationToken _ct;
 
         /// <summary>
         /// Results <see cref="DataTable"/>, becomes DataSource for <see cref="FuelTransPage.GeoGoDataView"/>
         /// </summary>
-        private DataTable GeoGoTable;
+        private DataTable _geoGoTable;
 
         /// <summary>
-        /// Authenticated <see cref="Geotab.GeotabAPI"/> instance
+        /// Authenticated <see cref="GeotabApi"/> instance
         /// </summary>
-        private static GeotabAPI GeotabAPI;
+        private readonly GeotabApi _geotabApi;
 
         //Private Variables
 
@@ -54,27 +54,27 @@ namespace Access_GeoGo.Data
         /// <summary>
         /// <see cref="Array"/> of <see cref="DataRow"/> entries from Access Fuel DB
         /// </summary>
-        private DataRow[] AccessDBEntries;
+        private DataRow[] _accessDbEntries;
 
         /// <summary>
         /// Contains calls to get Odometer readings from Geotab via <see cref="StatusData"/>
         /// </summary>
-        private GeotabAPI.MultiCallList<StatusData> odometerCalls;
+        private GeotabApi.MultiCallList<StatusData> _odometerCalls;
 
         /// <summary>
         /// Contains calls to get Engine Hours readings from Geotab via <see cref="StatusData"/>
         /// </summary>
-        private GeotabAPI.MultiCallList<StatusData> engineHoursCalls;
+        private GeotabApi.MultiCallList<StatusData> _engineHoursCalls;
 
         /// <summary>
         /// Contains calls to get Location readings from Geotab via <see cref="LogRecord"/>
         /// </summary>
-        private GeotabAPI.MultiCallList<LogRecord> locationCalls;
+        private GeotabApi.MultiCallList<LogRecord> _locationCalls;
 
         /// <summary>
         /// Contains calls to get the <see cref="Driver"/> of a <see cref="Device"/> from Geotab via <see cref="DriverChange"/>
         /// </summary>
-        private GeotabAPI.MultiCallList<DriverChange> driverCalls;
+        private GeotabApi.MultiCallList<DriverChange> _driverCalls;
 
         /// <summary>
         /// Cache of <see cref="Device"/> by <see cref="Id"/>
@@ -91,15 +91,16 @@ namespace Access_GeoGo.Data
         /// </summary>
         private static Dictionary<Id, User> _driverCache;
 
-        private static List<DeviceEntry> DeviceEntriesList;
-        private static List<DBEntry> DeviceErrorList;
-        private static List<GeoGo_Entry> GeoGoEntries;
+        private List<DeviceEntry> _deviceEntriesList;
+        private List<DbEntry> _deviceErrorList;
+        private List<GeoGoEntry> _geoGoEntries;
         public bool IsComplete;
-        private int RecordsCt;
+        public bool DbUpdated;
+        private int _recordsCt;
 
         #endregion Results Calls & Lists; Device & GeoGo Entry Lists
 
-        private bool disposed;
+        private bool _disposed;
 
         public void Dispose()
         {
@@ -111,11 +112,7 @@ namespace Access_GeoGo.Data
         /// Use new <see cref="CancellationToken"/>
         /// </summary>
         /// <param name="ct">The <see cref="CancellationToken"/></param>
-        public void UpdateCT(CancellationToken ct)
-        {
-            CT = ct;
-            GeotabAPI = new GeotabAPI(Program.API, ct);
-        }
+        public void UpdateCt(CancellationToken ct) => _geotabApi.UpdateCt(_ct = ct);
 
         /*Dispose(bool disposing) executes in two distinct scenarios.
         // If disposing equals true, the method has been called directly
@@ -131,45 +128,42 @@ namespace Access_GeoGo.Data
         /// <param name="disposing">True: called directly/indirectly by user's code; False: called by the runtime from inside the finalizer</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)// Check to see if Dispose has already been called.
-            {
-                // If disposing equals true, dispose all managed and unmanaged resources
-                if (disposing) GeotabAPI.Dispose(); // Dispose managed resources.
+            if (_disposed) return;// Check to see if Dispose has already been called.
+            // If disposing equals true, dispose all managed and unmanaged resources
+            if (disposing) _geotabApi.Dispose(); // Dispose managed resources.
 
-                // Call the appropriate methods to clean up unmanaged resources here.
-                // If disposing is false, only the following code is executed.
-                GGP = null;
-                DBP = null;
-                ConStr = null;
-                GeoGoTable = null;
-                AccessDBEntries = null;
-                odometerCalls = null;
-                engineHoursCalls = null;
-                locationCalls = null;
-                driverCalls = null;
-                _deviceCache = null;
-                _deviceNameCache = null;
-                _driverCache = null;
-                DeviceEntriesList = null;
-                DeviceErrorList = null;
-                GeoGoEntries = null;
+            // Call the appropriate methods to clean up unmanaged resources here.
+            // If disposing is false, only the following code is executed.
+            _ggp = null;
+            _dbp = null;
+            _conStr = null;
+            _geoGoTable = null;
+            _accessDbEntries = null;
+            _odometerCalls = null;
+            _engineHoursCalls = null;
+            _locationCalls = null;
+            _driverCalls = null;
+            _deviceCache = null;
+            _deviceNameCache = null;
+            _driverCache = null;
+            _deviceEntriesList = null;
+            _deviceErrorList = null;
+            _geoGoEntries = null;
 
-                disposed = true;// Note disposing has been done.
-            }
+            _disposed = true;// Note disposing has been done.
         }
 
         /// <summary>
         /// Initializes a <see cref="GeoGoQuery"/> instance
         /// </summary>
-        /// <param name="GeoGoPage"><see cref="FuelTransPage"/> instanced, assigned to <see cref="GGP"/> & contains <see cref="DBP"/></param>
-        /// <param name="ct">Cancellation Token, assigned to <see cref="CT"/></param>
-        public GeoGoQuery(FuelTransPage GeoGoPage, CancellationToken ct)
+        /// <param name="geoGoPage"><see cref="FuelTransPage"/> instanced, assigned to <see cref="_ggp"/> & contains <see cref="_dbp"/></param>
+        /// <param name="ct">Cancellation Token, assigned to <see cref="_ct"/></param>
+        public GeoGoQuery(FuelTransPage geoGoPage, CancellationToken ct)
         {
-            GGP = GeoGoPage;
-            DBP = GeoGoPage.DBP;
-            CT = ct;
-            GeotabAPI = new GeotabAPI(Program.API, ct);
-            ConStr = "Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + DBP.File + "; Persist Security Info = False";
+            _ggp = geoGoPage;
+            _dbp = geoGoPage.Dbp;
+            _geotabApi = new GeotabApi(_ct = ct);
+            _conStr = "Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + _dbp.File + "; Persist Security Info = False";
         }
 
         /// <summary>
@@ -180,11 +174,7 @@ namespace Access_GeoGo.Data
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                Task prep = PrepUIPage();
-                Task devCache = GetDeviceCache();
-                Task drvrCache = GetDriverCache();
-                Task getDB = GetDBEntries();
-                await Task.WhenAll(prep, devCache, drvrCache, getDB);
+                await Task.WhenAll(PrepUiPage(), GetDeviceCache(), GetDriverCache(), GetDbEntries());
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 await GetDeviceEntryList();
@@ -192,19 +182,23 @@ namespace Access_GeoGo.Data
                 await GetApiResults();
                 await GetGeoGoTable();
 
-                if (CT.IsCancellationRequested)
+                if (_ct.IsCancellationRequested)
                 {
                     Dispose();
                     return;
                 }
-                GGP.GeoGoDataView.DataSource = GeoGoTable;
-                GGP.ResultsFoundLabel.Text = $"Results Found: {GeoGoTable.Rows.Count} out of {DBP.Limit}";
+                _ggp.GeoGoDataView.DataSource = _geoGoTable;
+                _ggp.ResultsFoundLabel.Text = $"Results Found: {_geoGoTable.Rows.Count} out of {_dbp.Limit}";
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
                 string hours = ts.Hours > 0 ? $"{ts.Hours:00}:" : "";
                 string elapsedTime = $"{hours}{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}";
                 await UpdateProgress(100, $"Done | Run Time: {elapsedTime}");
-                MessageBox.Show($"Records Found: {RecordsCt}\nSuccess: {DeviceEntriesList.Count}\nError: {DeviceErrorList.Count}", "Query Complete");
+
+                string msg = $"Records Found: {_recordsCt}\nSuccess: {_deviceEntriesList.Count}\nError: {_deviceErrorList.Count}";
+                Cleanup();
+
+                MessageBox.Show(msg, "Query Complete");
                 IsComplete = true;
             }
             catch (OperationCanceledException)
@@ -217,7 +211,20 @@ namespace Access_GeoGo.Data
                 watch.Stop();
                 Program.ShowError(err);
             }
-            return;
+        }
+
+        private void Cleanup()
+        {
+            _accessDbEntries = null;
+            _odometerCalls = null;
+            _engineHoursCalls = null;
+            _locationCalls = null;
+            _driverCalls = null;
+            _deviceEntriesList = null;
+            _deviceErrorList = null;
+            _geoGoEntries = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         /// <summary>
@@ -227,60 +234,60 @@ namespace Access_GeoGo.Data
         /// <param name="stat">New <see cref="FuelTransPage.QueryLoadingLabel"/> status message</param>
         private Task UpdateProgress(int val, string stat = "Loading...")
         {
-            if (CT.IsCancellationRequested) return Task.CompletedTask;
+            if (_ct.IsCancellationRequested) return Task.CompletedTask;
             decimal percentage = Convert.ToDecimal(val) / 100;
-            decimal value = Math.Round(Convert.ToDecimal(GGP.QueryLoadingBar.Maximum) * percentage);
-            if (value != 0 && value < GGP.QueryLoadingBar.Value) return Task.CompletedTask;
-            GGP.QueryLoadingBar.Value = (int)value;
-            GGP.QueryLoadingLabel.Text = stat;
+            decimal value = Math.Round(Convert.ToDecimal(_ggp.QueryLoadingBar.Maximum) * percentage);
+            if (value != 0 && value < _ggp.QueryLoadingBar.Value) return Task.CompletedTask;
+            _ggp.QueryLoadingBar.Value = (int)value;
+            _ggp.QueryLoadingLabel.Text = stat;
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Set/reset <see cref="FuelTransPage"/> instance (<see cref="GGP"/>) UI to prep for results
+        /// Set/reset <see cref="FuelTransPage"/> instance (<see cref="_ggp"/>) UI to prep for results
         /// </summary>
-        private async Task PrepUIPage()
+        private async Task PrepUiPage()
         {
-            CT.ThrowIfCancellationRequested();
-            if (GeoGoTable is null) GeoGoTable = new DataTable();
+            _ct.ThrowIfCancellationRequested();
+            if (_geoGoTable is null) _geoGoTable = new DataTable();
             else
             {
-                GeoGoTable.Clear();
-                GGP.GeoGoDataView.DataSource = GeoGoTable;
+                _geoGoTable.Clear();
+                _ggp.GeoGoDataView.DataSource = _geoGoTable;
             }
-            GGP.QueryLoadingLabel.Visible = true;
-            GGP.QueryLoadingBar.Visible = true;
-            GGP.ResultsFoundLabel.Text = "Results Found:";
-            GGP.InsertBtn.Enabled = true;
+            _ggp.QueryLoadingLabel.Visible = true;
+            _ggp.QueryLoadingBar.Visible = true;
+            _ggp.ResultsFoundLabel.Text = "Results Found:";
+            _ggp.InsertBtn.Enabled = true;
             await UpdateProgress(0);
         }
 
         private async Task GetDeviceCache()
         {
-            _deviceCache = await GeotabAPI.GetDictionary<Device, Id>(d => d.Id);
-            _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
+            if (_deviceCache == null) _deviceCache = await _geotabApi.GetDictionary<Device, Id>(d => d.Id);
+            if (_deviceNameCache == null) _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
             await UpdateProgress(40);
         }
 
         private async Task GetDriverCache()
         {
-            _driverCache = await GeotabAPI.GetDictionary<User, Id>(d => d.Id);
-            await UpdateProgress(40);
+            if (_driverCache == null) _driverCache = await _geotabApi.GetDictionary<User, Id>(d => d.Id);
+            await UpdateProgress(35);
         }
 
-        private async Task GetDBEntries()
+        private async Task GetDbEntries()
         {
-            CT.ThrowIfCancellationRequested();
-            DataTable AccessDT = new DataTable();
-            OleDbConnection con = new OleDbConnection(ConStr);
-            string query = $"SELECT TOP {DBP.Limit} * FROM [{DBP.Table}] WHERE [{DBP.GTStatus}] = '{DBP.GTS_Value}';";
+            _ct.ThrowIfCancellationRequested();
+            DataTable accessDt = new DataTable();
+            OleDbConnection con = new OleDbConnection(_conStr);
+            string query = $"SELECT TOP {_dbp.Limit} * FROM [{_dbp.Table}] WHERE [{_dbp.GtStatus}] = '{_dbp.GtsValue}';";
             using (OleDbCommand cmd = new OleDbCommand(query, con))
             {
                 try
                 {
                     con.Open();
                     OleDbDataReader reader = cmd.ExecuteReader();
-                    AccessDT.Load(reader);
+                    accessDt.Load(reader);
                     con.Close();
                 }
                 catch (Exception err)
@@ -289,23 +296,22 @@ namespace Access_GeoGo.Data
                     con.Close();
                 }
             }
-            AccessDBEntries = AccessDT.Select();
-            RecordsCt = AccessDBEntries.Length;
+            _accessDbEntries = accessDt.Select();
+            _recordsCt = _accessDbEntries.Length;
             await UpdateProgress(15);
-            return;
         }
 
         private async Task GetDeviceEntryList()
         {
-            CT.ThrowIfCancellationRequested();
-            DeviceEntriesList = new List<DeviceEntry>();
-            DeviceErrorList = new List<DBEntry>();
-            string id = DBP.Id;
-            string time = DBP.Time;
-            foreach ((string devName, DBEntry dbEntry) in from DataRow row in AccessDBEntries
-                    let devNameField = row.Field<string>(DBP.Vehicle) ?? ""// Get Vehicle field; if null, set to ""
+            _ct.ThrowIfCancellationRequested();
+            _deviceEntriesList = new List<DeviceEntry>();
+            _deviceErrorList = new List<DbEntry>();
+            string id = _dbp.Id;
+            string time = _dbp.Time;
+            foreach ((string devName, DbEntry dbEntry) in from DataRow row in _accessDbEntries
+                    let devNameField = row.Field<string>(_dbp.Vehicle) ?? ""// Get Vehicle field; if null, set to ""
                     let devName = Regex.Replace(devNameField, @"\s\d*", "")//Remove vehicle name suffix that matches the pattern space#* (e.g. 'Sara 04' to 'Sara')
-                    let dbEntry = new DBEntry(new DBEntryParams
+                    let dbEntry = new DbEntry(new DbEntryParams
                     {
                         Id = row.Field<int>(id),
                         Vehicle = devName,
@@ -314,9 +320,9 @@ namespace Access_GeoGo.Data
                     select (devName, dbEntry))
             {
                 if (_deviceNameCache.TryGetValue(devName, out Id devId))
-                    DeviceEntriesList.Add(new DeviceEntry(dbEntry, _deviceCache[devId]));
+                    _deviceEntriesList.Add(new DeviceEntry(dbEntry, _deviceCache[devId]));
                 else
-                    DeviceErrorList.Add(dbEntry);
+                    _deviceErrorList.Add(dbEntry);
             }
 
             await UpdateProgress(45);
@@ -324,17 +330,17 @@ namespace Access_GeoGo.Data
 
         private async Task GetCallsList()
         {
-            if (CT.IsCancellationRequested) return;
-            odometerCalls = new GeotabAPI.MultiCallList<StatusData>();
-            engineHoursCalls = new GeotabAPI.MultiCallList<StatusData>();
-            locationCalls = new GeotabAPI.MultiCallList<LogRecord>();
-            driverCalls = new GeotabAPI.MultiCallList<DriverChange>();
-            foreach ((Device device, DBEntry entry) in from DeviceEntry deviceEntry in DeviceEntriesList
+            if (_ct.IsCancellationRequested) return;
+            _odometerCalls = new GeotabApi.MultiCallList<StatusData>();
+            _engineHoursCalls = new GeotabApi.MultiCallList<StatusData>();
+            _locationCalls = new GeotabApi.MultiCallList<LogRecord>();
+            _driverCalls = new GeotabApi.MultiCallList<DriverChange>();
+            foreach ((Device device, DbEntry entry) in from DeviceEntry deviceEntry in _deviceEntriesList
                     let device = deviceEntry.Device
                     let entry = deviceEntry.Entry
                     select (device, entry))
             {
-                odometerCalls.AddCall("Get", new
+                _odometerCalls.AddCall("Get", new
                 {
                     search = new StatusDataSearch
                     {
@@ -344,7 +350,7 @@ namespace Access_GeoGo.Data
                         DeviceSearch = new DeviceSearch(device.Id)
                     }
                 });
-                engineHoursCalls.AddCall("Get", new
+                _engineHoursCalls.AddCall("Get", new
                 {
                     search = new StatusDataSearch
                     {
@@ -354,7 +360,7 @@ namespace Access_GeoGo.Data
                         DeviceSearch = new DeviceSearch(device.Id)
                     }
                 });
-                locationCalls.AddCall("Get", new
+                _locationCalls.AddCall("Get", new
                 {
                     search = new LogRecordSearch
                     {
@@ -366,7 +372,7 @@ namespace Access_GeoGo.Data
                         }
                     }
                 });
-                driverCalls.AddCall("Get", new
+                _driverCalls.AddCall("Get", new
                 {
                     search = new DriverChangeSearch
                     {
@@ -382,36 +388,28 @@ namespace Access_GeoGo.Data
             }
 
             await UpdateProgress(50);
-            return;
         }
 
         private async Task GetApiResults()
         {
-            try
-            {
-                await Task.WhenAll(odometerCalls.MakeCall(), engineHoursCalls.MakeCall(), locationCalls.MakeCall(), driverCalls.MakeCall());
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            if (CT.IsCancellationRequested) return;
-            List<StatusData> oCallResults = odometerCalls.GetResults();
-            List<StatusData> eHoursCallResults = engineHoursCalls.GetResults();
-            List<LogRecord> lCallResults = locationCalls.GetResults();
-            List<DriverChange> dCallResults = driverCalls.GetResults();
+            await Task.WhenAll(_odometerCalls.Execute(), _engineHoursCalls.Execute(), _locationCalls.Execute(), _driverCalls.Execute());
+            if (_ct.IsCancellationRequested) return;
+            List<StatusData> oCallResults = _odometerCalls.GetResults();
+            List<StatusData> eHoursCallResults = _engineHoursCalls.GetResults();
+            List<LogRecord> lCallResults = _locationCalls.GetResults();
+            List<DriverChange> dCallResults = _driverCalls.GetResults();
             await UpdateProgress(75);
 
-            GeoGoEntries = new List<GeoGo_Entry>();
+            _geoGoEntries = new List<GeoGoEntry>();
             for (int i = 0; i < oCallResults.Count; i++)
             {
                 StatusData odometer = oCallResults[i];
                 StatusData engineHours = eHoursCallResults[i];
                 LogRecord location = lCallResults[i];
-                string driver = (dCallResults[i] != null) && _driverCache.TryGetValue(dCallResults[i].GetDriverId(), out User user) ? user.Name : "Unknown Driver";
-                Device device = DeviceEntriesList[i].Device;
-                DBEntry entry = DeviceEntriesList[i].Entry;
-                GeoGoEntries.Add(new GeoGo_Entry(new GeoGo_EntryData
+                string driver = dCallResults[i] != null && _driverCache.TryGetValue(dCallResults[i].GetDriverId(), out User user) ? user.Name : "Unknown Driver";
+                Device device = _deviceEntriesList[i].Device;
+                DbEntry entry = _deviceEntriesList[i].Entry;
+                _geoGoEntries.Add(new GeoGoEntry(new GeoGoEntryData
                 {
                     Device = device,
                     DeviceEngineHours = engineHours,
@@ -422,12 +420,11 @@ namespace Access_GeoGo.Data
                 }));
             }
             await UpdateProgress(90);
-            return;
         }
 
         private async Task GetGeoGoTable()
         {
-            if (CT.IsCancellationRequested) return;
+            if (_ct.IsCancellationRequested) return;
             DataTable dt = new DataTable();
             dt.Columns.Add("Entry ID");
             dt.Columns.Add("Geotab Status");
@@ -438,23 +435,23 @@ namespace Access_GeoGo.Data
             dt.Columns.Add("Latitude");
             dt.Columns.Add("Longitude");
             dt.Columns.Add("Driver");
-            foreach ((GeoGo_Entry GeoGo, DataRow dr) in from GeoGo_Entry GeoGo in GeoGoEntries
+            foreach ((GeoGoEntry geoGo, DataRow dr) in from GeoGoEntry geoGo in _geoGoEntries
                     let dr = dt.NewRow()
-                    select (GeoGo, dr))
+                    select (geoGo, dr))
             {
-                dr[0] = GeoGo.EntryID;
-                dr[1] = GeoGo.GTStatus;
-                dr[2] = GeoGo.Timestamp.ToLocalTime();
-                dr[3] = GeoGo.DeviceName;
-                dr[4] = GeoGo.Miles;
-                dr[5] = GeoGo.Hours;
-                dr[6] = GeoGo.Latitude;
-                dr[7] = GeoGo.Longitude;
-                dr[8] = GeoGo.Driver;
+                dr[0] = geoGo.EntryId;
+                dr[1] = geoGo.GtStatus;
+                dr[2] = geoGo.Timestamp.ToLocalTime();
+                dr[3] = geoGo.DeviceName;
+                dr[4] = geoGo.Miles;
+                dr[5] = geoGo.Hours;
+                dr[6] = geoGo.Latitude;
+                dr[7] = geoGo.Longitude;
+                dr[8] = geoGo.Driver;
                 dt.Rows.Add(dr);
             }
 
-            foreach ((DBEntry dbe, DataRow dr) in from DBEntry dbe in DeviceErrorList
+            foreach ((DbEntry dbe, DataRow dr) in from DbEntry dbe in _deviceErrorList
                     let dr = dt.NewRow()
                     select (dbe, dr))
             {
@@ -470,19 +467,19 @@ namespace Access_GeoGo.Data
                 dt.Rows.Add(dr);
             }
 
-            GeoGoTable = dt;
-            await UpdateProgress(100, "Done");
-            return;
+            _geoGoTable = dt;
+            await UpdateProgress(99);
         }
 
-        public void UpdateAccessDB()
+        public void UpdateAccessDb()
         {
-            if (CT.IsCancellationRequested) return;
-            DataTable dt = GeoGoTable;
-            OleDbConnection con = new OleDbConnection(ConStr);
+            if (_ct.IsCancellationRequested) return;
+            DataTable dt = _geoGoTable;
+            OleDbConnection con = new OleDbConnection(_conStr);
             using (con)
             {
                 int updated = 0;
+                int errors = 0;
                 try
                 {
                     con.Open();
@@ -495,13 +492,22 @@ namespace Access_GeoGo.Data
                             let longitude = dr.Field<string>("Longitude")
                             let driver = dr.Field<string>("Driver")
                             let entryId = dr.Field<string>("Entry ID")
-                            let query = $"UPDATE [{DBP.Table}] SET [{DBP.GTStatus}] = '{gtStatus}', [{DBP.Odometer}] = {oReading}, [{DBP.EngineHrs}] = {engineHrs}, [{DBP.Latitude}] = '{latitude}', [{DBP.Longitude}] = '{longitude}', [{DBP.Driver}] = '{driver}' WHERE [{DBP.Id}] = {entryId};"
+                            let query = $"UPDATE [{_dbp.Table}] SET [{_dbp.GtStatus}] = '{gtStatus}', " +
+                                        $"[{_dbp.Odometer}] = {oReading}, [{_dbp.EngineHrs}] = {engineHrs}, " +
+                                        $"[{_dbp.Latitude}] = '{latitude}', [{_dbp.Longitude}] = '{longitude}', " +
+                                        $"[{_dbp.Driver}] = '{driver}' WHERE [{_dbp.Id}] = {entryId};"
                             select query)
                         using (OleDbCommand cmd = new OleDbCommand(query, con, transaction))
                         {
-                            updated += cmd.ExecuteNonQuery();
+                            try
+                            {
+                                updated += cmd.ExecuteNonQuery();
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                errors++;
+                            }
                         }
-
                     transaction.Commit();
                 }
                 catch (Exception err)
@@ -510,8 +516,10 @@ namespace Access_GeoGo.Data
                 }
                 finally
                 {
-                    if (!GGP.IsDisposed) GGP.InsertBtn.Enabled = false;
-                    MessageBox.Show($"{updated} out of {dt.Rows.Count} entries updated successfully.", "DB Update Complete");
+                    con.Close();
+                    if (!_ggp.IsDisposed) _ggp.InsertBtn.Enabled = false;
+                    DbUpdated = true;
+                    MessageBox.Show($"Total: {dt.Rows.Count}\nSuccessful: {updated}\nErrors: {errors}", "DB Update Complete");
                 }
             }
         }

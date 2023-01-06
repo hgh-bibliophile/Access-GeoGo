@@ -8,17 +8,15 @@ using System.Threading.Tasks;
 
 namespace Access_GeoGo.Data.Geotab
 {
-    internal class GeotabAPI : IDisposable
+    internal class GeotabApi : IDisposable
     {
-        private static API API;
-        private static CancellationToken CT;
-        private bool disposed;
+        private static API _api = Program.Api;
+        private static CancellationToken _ct;
+        private bool _disposed;
 
-        public GeotabAPI(API api, CancellationToken ct)
-        {
-            API = api;
-            CT = ct;
-        }
+        public GeotabApi(CancellationToken ct) => _ct = ct;
+
+        public void UpdateCt(CancellationToken ct) => _ct = ct;
 
         public void Dispose()
         {
@@ -28,24 +26,22 @@ namespace Access_GeoGo.Data.Geotab
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
-            {
-                if (disposing) { }
-                API = null;
-                disposed = true;
-            }
+            if (_disposed) return;
+            if (disposing) { }
+            _api = null;
+            _disposed = true;
         }
 
         //TODO: Add Code Documentation
-        public async Task<TResult> Get<TResult, TType>(string GetMethod, object Params = null)
+        public async Task<TResult> Get<TResult, TType>(string getMethod, object @params = null)
         {
-            TResult TReturn = default;
+            TResult @return = default;
             try
             {
-                TReturn = await API.CallAsync<TResult>(GetMethod, typeof(TType), Params, CT);
+                @return = await _api.CallAsync<TResult>(getMethod, typeof(TType), @params, _ct);
             }
             catch (OperationCanceledException) { }
-            return TReturn;
+            return @return;
         }
 
         /// <summary>
@@ -57,14 +53,14 @@ namespace Access_GeoGo.Data.Geotab
         /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
         public async Task<Dictionary<TKey, TSource>> GetDictionary<TSource, TKey>(Func<TSource, TKey> getKey)
         {
-            Dictionary<TKey, TSource> TSourceDictionary = null;
+            Dictionary<TKey, TSource> sDict = null;
             try
             {
-                List<TSource> TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
-                TSourceDictionary = TSourceList.ToDictionary(s => getKey(s));
+                List<TSource> sList = await _api.CallAsync<List<TSource>>("Get", typeof(TSource), null, _ct);
+                sDict = sList.ToDictionary(getKey);
             }
             catch (OperationCanceledException) { }
-            return TSourceDictionary;
+            return sDict;
         }
 
         /// <summary>
@@ -78,62 +74,48 @@ namespace Access_GeoGo.Data.Geotab
         /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
         public async Task<Dictionary<TKey, TValue>> GetDictionary<TSource, TKey, TValue>(Func<TSource, TKey> getKey, Func<TSource, TValue> getValue)
         {
-            Dictionary<TKey, TValue> TSourceDictionary = null;
+            Dictionary<TKey, TValue> sDict = null;
             try
             {
-                List<TSource> TSourceList = await API.CallAsync<List<TSource>>("Get", typeof(TSource), null, CT);
-                TSourceDictionary = TSourceList.ToDictionary(s => getKey(s), s => getValue(s));
+                List<TSource> sList = await _api.CallAsync<List<TSource>>("Get", typeof(TSource), null, _ct);
+                sDict = sList.ToDictionary(getKey, getValue);
             }
             catch (OperationCanceledException) { }
-            return TSourceDictionary;
+            return sDict;
         }
 
         public class MultiCallList<TType>
         {
-            private readonly List<object> CallsList;
-            private List<object> ResultsList;
+            private readonly List<object> _callsList;
+            private List<object> _resultsList;
 
-            public MultiCallList() => CallsList = new List<object>();
+            public MultiCallList() => _callsList = new List<object>();
 
-            public void AddCall(string GetMethod, object Params = null)
+            public void AddCall(string getMethod, object @params = null)
             {
-                CallsList.Add(new object[] { GetMethod, typeof(TType), Params, CT, typeof(List<TType>) });
+                _callsList.Add(new[] { getMethod, typeof(TType), @params, _ct, typeof(List<TType>) });
             }
 
-            public async Task<List<TType>> GetCallResults()
+            public async Task<List<TType>> ExecuteGetResults()
             {
-                List<TType> TResultList = null;
-                try
-                {
-                    List<object> TGetResults = await API.MultiCallAsync(CallsList.ToArray());
-                    TResultList = (from List<TType> TResults in TGetResults
-                                   select TResults[0]).ToList();
-                }
-                catch (OperationCanceledException) { }
-                return TResultList;
+                await Execute();
+                return GetResults();
             }
 
             public List<TType> GetResults()
             {
-                List<TType> TResultList = new List<TType>();
-                //x List<Device> dt = new List<Device>();
-                //x dt.Add(null);
-                if (!(ResultsList is null))
-                    foreach (List<TType> TResults in ResultsList)
-                    {
-                        if (TResults.Count >= 1)
-                            TResultList.Add(TResults[0]);
-                        else
-                            TResultList.Add(default);
-                    }
-                return TResultList;
+                List<TType> resultList = new List<TType>();
+                if (!(_resultsList is null))
+                    resultList.AddRange(from List<TType> results in _resultsList
+                        select results.Count >= 1 ? results[0] : default);
+                return resultList;
             }
 
-            public async Task<MultiCallList<TType>> MakeCall()
+            public async Task<MultiCallList<TType>> Execute()
             {
                 try
                 {
-                    ResultsList = await API.MultiCallAsync(CallsList.ToArray());
+                    _resultsList = await _api.MultiCallAsync(_callsList.ToArray());
                 }
                 catch (OperationCanceledException) { }
                 return this;

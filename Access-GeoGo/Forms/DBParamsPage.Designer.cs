@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace Access_GeoGo.Forms
 {
-    partial class DBParamsPage
+    partial class DbParamsPage
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace Access_GeoGo.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DBParamsPage));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DbParamsPage));
             this.FindDBDialog = new System.Windows.Forms.OpenFileDialog();
             this.FindBtn = new System.Windows.Forms.Button();
             this.DatabaseLabel = new System.Windows.Forms.Label();
@@ -437,7 +437,7 @@ namespace Access_GeoGo.Forms
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "DBParamsPage";
+            this.Name = "DbParamsPage";
             this.Text = "Database Selection";
             ((System.ComponentModel.ISupportInitialize)(this.LimitEntriesBox)).EndInit();
             this.ResumeLayout(false);

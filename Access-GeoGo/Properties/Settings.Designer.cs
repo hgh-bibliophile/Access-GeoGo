@@ -22,27 +22,5 @@ namespace Access_GeoGo.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=|DataDirectory|\\Geotab-Auth-Test.ac" +
-            "cdb")]
-        public string GeoGo_Database_ConnectionString {
-            get {
-                return ((string)(this["GeoGo_Database_ConnectionString"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\"C:\\Users\\Hannah\\MasterFiles\\Coding" +
-            "\\Visual Studio\\Access-GeoGo\\Fuel-Sample.accdb\"")]
-        public string Geotab_Fuel_DB_ConnectionString {
-            get {
-                return ((string)(this["Geotab_Fuel_DB_ConnectionString"]));
-            }
-        }
     }
 }

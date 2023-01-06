@@ -19,72 +19,86 @@ namespace Access_GeoGo.Forms
         private static Dictionary<Id, Controller> _controllerCache;
         private static Dictionary<Id, Diagnostic> _diagnosticCache;
         private static Dictionary<Id, FailureMode> _fmiCache;
-        private static GeotabAPI GeotabAPI;
-        private readonly CancellationTokenSource CTS;
+        private readonly GeotabApi _geotabApi;
 
         public FaultCodesPage()
         {
             InitializeComponent();
-            CTS = new CancellationTokenSource();
-            GeotabAPI = new GeotabAPI(Program.API, CTS.Token);
+            CancellationTokenSource cts = new CancellationTokenSource();
+            _geotabApi = new GeotabApi(cts.Token);
         }
 
         private async void ResultsBtn_Click(object sender, EventArgs e)
         {
-            List<FaultData> FaultData = await GetFaultCodes();
-            DisplayCodes(FaultData);
+            List<FaultData> faultData = await GetFaultCodes();
+            DisplayCodes(faultData);
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
         private async void GetFeedBtn_Click(object sender, EventArgs e)
         {
-            FeedResult<FaultData> FaultData = await GetFaultFeed();
-            DisplayCodes(FaultData);
+            FeedResult<FaultData> faultFeed = await GetFaultFeed();
+            DisplayCodes(faultFeed);
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
         private async void FaultCodesPage_Load(object sender, EventArgs e)
         {
-            await Task.WhenAll(GetDeviceList(), GetCachedData());
+            await Task.WhenAll(GetDeviceList(), GetControllerCache(), GetDiagnosticCache(), GetFmiCache());
             GetFeedBtn.Enabled = true;
             SearchBtn.Enabled = true;
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
+        /*
         private async Task GetCachedData()
         {
-            var controller = GeotabAPI.GetDictionary<Controller, Id>(c => c.Id);
-            var diagnostic = GeotabAPI.GetDictionary<Diagnostic, Id>(c => c.Id);
-            var fmi = GeotabAPI.GetDictionary<FailureMode, Id>(f => f.Id);
+            Task<Dictionary<Id, Controller>> controller = _geotabApi.GetDictionary<Controller, Id>(c => c.Id);
+            Task<Dictionary<Id, Diagnostic>> diagnostic = _geotabApi.GetDictionary<Diagnostic, Id>(c => c.Id);
+            Task<Dictionary<Id, FailureMode>> fmi = _geotabApi.GetDictionary<FailureMode, Id>(f => f.Id);
             await Task.WhenAll(controller, diagnostic, fmi);
             _diagnosticCache = diagnostic.Result;
             _controllerCache = controller.Result;
             _fmiCache = fmi.Result;
-            return;
-        }
+        }*/
 
         private async Task GetDeviceList()
         {
-            _deviceCache = await GeotabAPI.GetDictionary<Device, Id>(d => d.Id);
-            _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
-            DeviceComboBox.Items.AddRange(_deviceNameCache.Keys.ToArray());
-            return;
+            await GetDeviceCache();
+            DeviceComboBox.Items.AddRange(_deviceNameCache.Keys.ToArray<object>());
+        }
+        private async Task GetDeviceCache()
+        {
+            if (_deviceCache == null) _deviceCache = await _geotabApi.GetDictionary<Device, Id>(d => d.Id);
+            if (_deviceNameCache == null) _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
+        }
+        private async Task GetControllerCache()
+        {
+            if (_controllerCache == null) _controllerCache = await _geotabApi.GetDictionary<Controller, Id>(c => c.Id);
+        }
+        private async Task GetDiagnosticCache()
+        {
+            if (_diagnosticCache == null) _diagnosticCache = await _geotabApi.GetDictionary<Diagnostic, Id>(c => c.Id);
+        }
+        private async Task GetFmiCache()
+        {
+            if (_fmiCache == null) _fmiCache = await _geotabApi.GetDictionary<FailureMode, Id>(f => f.Id);
         }
 
         private async Task<FeedResult<FaultData>> GetFaultFeed()
         {
-            var FaultData = Convert.ToInt64(Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token);
-            FeedResult<FaultData> FeedResults = await GeotabAPI.Get<FeedResult<FaultData>, FaultData>("GetFeed", new
+            long faultData = Convert.ToInt64(Program.Config.GeotabFeeds.Users[Program.Config.UserConfig.Name].DataFeeds["FaultData"].Token);
+            FeedResult<FaultData> feedResults = await _geotabApi.Get<FeedResult<FaultData>, FaultData>("GetFeed", new
             {
                 resultsLimit = 10000,
-                fromVersion = FaultData
+                fromVersion = faultData
             });
-            Program.CONFIG.GeotabFeeds.Users[Program.CONFIG.UserConfig.Name].DataFeeds["FaultData"].Token = FeedResults.ToVersion.ToString();
-            Program.CONFIG.APP_CONFIG.Save();
-            return FeedResults;
+            Program.Config.GeotabFeeds.Users[Program.Config.UserConfig.Name].DataFeeds["FaultData"].Token = feedResults.ToVersion.ToString();
+            Program.Config.AppConfig.Save();
+            return feedResults;
         }
 
         private async Task<List<FaultData>> GetFaultCodes()
@@ -97,7 +111,7 @@ namespace Access_GeoGo.Forms
                 {
                     Id = _deviceNameCache[DeviceComboBox.Text]
                 };
-            return await GeotabAPI.Get<List<FaultData>, FaultData>("Get", new
+            return await _geotabApi.Get<List<FaultData>, FaultData>("Get", new
             {
                 resultsLimit = LimitSelection.Value,
                 search = faultDataSearch
@@ -156,7 +170,7 @@ namespace Access_GeoGo.Forms
             fd.Controller = _controllerCache[fd.Controller.Id];
             fd.FailureMode = _fmiCache[fd.FailureMode.Id];
             dr[0] = fd.Device.Name;
-            dr[1] = ((int)fd.Diagnostic.Code).ToString("X");
+            dr[1] = (fd.Diagnostic.Code ?? 0).ToString("X");
             dr[2] = fd.Diagnostic.Name;
             dr[3] = fd.Controller.Name;
             dr[4] = fd.FailureMode.Name;

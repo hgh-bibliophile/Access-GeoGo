@@ -6,24 +6,24 @@ namespace Access_GeoGo.Forms
 {
     public partial class MenuPage : Form
     {
-        private AuthenticatePage auth;
+        private AuthenticatePage _auth;
 
         public MenuPage() => InitializeComponent();
 
-        public void FinishAuth(API authAPI, bool authStatus)
+        private void FinishAuth(API authApi, bool authStatus)
         {
-            auth.Close();
+            _auth.Close();
             Autenticated_CheckBox.Checked = true;
-            Userame_Label.Text = "Username:\n - " + authAPI.UserName;
-            Program.API = authAPI;
+            Userame_Label.Text = "Username:\n - " + authApi.UserName;
+            Program.Api = authApi;
             Program.AuthStatus = authStatus;
         }
 
         private void AuthenticatePageButton_Click(object sender, EventArgs e)
         {
-            auth = new AuthenticatePage();
-            auth.AuthComplete += new AuthenticatePage.AuthCompleteHandler(FinishAuth);
-            auth.Show();
+            _auth = new AuthenticatePage();
+            _auth.AuthComplete += FinishAuth;
+            _auth.Show();
         }
 
         private void FaultCodesBtn_Click(object sender, EventArgs e)
@@ -42,7 +42,7 @@ namespace Access_GeoGo.Forms
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             if (!Program.CheckAuth()) return;
-            new DBParamsPage().Show();
+            new DbParamsPage().Show();
         }
     }
 }

@@ -1,34 +1,35 @@
 ﻿using Geotab.Checkmate;
 using System;
 using System.Windows.Forms;
+using Geotab.Checkmate.ObjectModel;
 
 namespace Access_GeoGo.Forms
 {
     public partial class AuthenticatePage : Form
     {
         /// <summary>
-        /// The authenticated Geotab API object, transferred to <see cref="Program.API"/>
+        /// The authenticated Geotab API object, transferred to <see cref="Program.Api"/>
         /// </summary>
-        private static API api;
+        private static API _api;
 
         /// <summary>
         /// (Optional) Geotab database name
         /// </summary>
-        private static string Database;
+        private string _database;
 
         /// <summary>
         /// Geotab Account Password
         /// </summary>
-        private static string Password;
+        private string _password;
 
         /// <summary>
         /// Geotab Account Username
         /// </summary>
-        private static string Username;
+        private string _username;
 
         public AuthenticatePage() => InitializeComponent();
 
-        public delegate void AuthCompleteHandler(API AuthAPI, bool AuthStatus);
+        public delegate void AuthCompleteHandler(API authApi, bool authStatus);
 
         /// <summary>
         /// On-authorization event and handeler
@@ -42,12 +43,9 @@ namespace Access_GeoGo.Forms
         /// <returns></returns>
         protected override bool ProcessDialogKey(Keys keyData)
         {
-            if (ModifierKeys == Keys.None && keyData == Keys.Escape)
-            {
-                Close();
-                return true;
-            }
-            return base.ProcessDialogKey(keyData);
+            if (ModifierKeys != Keys.None || keyData != Keys.Escape) return base.ProcessDialogKey(keyData);
+            Close();
+            return true;
         }
 
         /// <summary>
@@ -57,15 +55,19 @@ namespace Access_GeoGo.Forms
         /// <param name="e"></param>
         private async void AuthenticateButton_Click(object sender, EventArgs e)
         {
-            Username = Username_Input.Text;
-            Password = Password_Input.Text;
-            Database = Database_Input.Text;
+            _username = Username_Input.Text;
+            _password = Password_Input.Text;
+            _database = Database_Input.Text;
             try
             {
-                api = new API(Username, Password, null, Database);
-                await api.AuthenticateAsync();
-                MessageBox.Show("Successfully Authenticated\nSession Id:" + api.SessionId);
-                AuthComplete?.Invoke(api, true);
+                _api = new API(_username, _password, null, _database);
+                await _api.AuthenticateAsync();
+                MessageBox.Show("Successfully Authenticated\nSession Id:" + _api.SessionId);
+                AuthComplete?.Invoke(_api, true);
+            }
+            catch (InvalidUserException err)
+            {
+                MessageBox.Show(err.Message, "Authentication Failed");
             }
             catch (Exception err)
             {
@@ -80,9 +82,9 @@ namespace Access_GeoGo.Forms
         /// <param name="e"></param>
         private void AuthenticatePage_Load(object sender, EventArgs e)
         {
-            Username = Username_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Username;
-            Password = Password_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Password;
-            Database = Database_Input.Text = Program.CONFIG.UserConfig.Geotab_Auth.Database;
+            _username = Username_Input.Text = Program.Config.UserConfig.GeotabAuth.Username;
+            _password = Password_Input.Text = Program.Config.UserConfig.GeotabAuth.Password;
+            _database = Database_Input.Text = Program.Config.UserConfig.GeotabAuth.Database;
             EnableAuthenticateButton();
         }
 

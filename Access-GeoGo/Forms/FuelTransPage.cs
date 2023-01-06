@@ -10,37 +10,34 @@ namespace Access_GeoGo.Forms
 {
     public partial class FuelTransPage : Form
     {
-        public DBParamsPage DBP;
-        private static string db;
-        private CancellationTokenSource CT;
-        private GeoGoQuery GeoGoQuery;
+        public DbParamsPage Dbp;
+        private readonly string _db;
+        private CancellationTokenSource _ct;
+        private GeoGoQuery _geoGoQuery;
 
-        public FuelTransPage(DBParamsPage dbp)
+        public FuelTransPage(DbParamsPage dbp)
         {
-            DBP = dbp;
-            db = DBP.File;
+            Dbp = dbp;
+            _db = Dbp.File;
             InitializeComponent();
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
         {
-            if (ModifierKeys == Keys.None && keyData == Keys.Escape)
-            {
-                Close();
-                return true;
-            }
-            return base.ProcessDialogKey(keyData);
+            if (ModifierKeys != Keys.None || keyData != Keys.Escape) return base.ProcessDialogKey(keyData);
+            Close();
+            return true;
         }
 
         private async Task ExecuteQuery()
         {
-            using (CT = new CancellationTokenSource())
+            using (_ct = new CancellationTokenSource())
             {
                 try
                 {
-                    if (GeoGoQuery == null) GeoGoQuery = new GeoGoQuery(this, CT.Token);
-                    else GeoGoQuery.UpdateCT(CT.Token);
-                    await GeoGoQuery.GeoGoQueryAsync();
+                    if (_geoGoQuery == null) _geoGoQuery = new GeoGoQuery(this, _ct.Token);
+                    else _geoGoQuery.UpdateCt(_ct.Token);
+                    await _geoGoQuery.GeoGoQueryAsync();
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception err)
@@ -48,7 +45,7 @@ namespace Access_GeoGo.Forms
                     Program.ShowError(err);
                 }
             }
-            CT = null;
+            _ct = null;
         }
 
         /// <summary>
@@ -70,18 +67,26 @@ namespace Access_GeoGo.Forms
 
         private void GeoGoPage_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!(CT is null))
+            if (!(_ct is null))
             {
-                CT.Cancel();
-                CT.Dispose();
+                _ct.Cancel();
+                _ct.Dispose();
             }
-            GeoGoQuery.Dispose();
+            _geoGoQuery.Dispose();
         }
 
-        private void InsertBtn_Click(object sender, EventArgs e) => GeoGoQuery.UpdateAccessDB();
+        private void InsertBtn_Click(object sender, EventArgs e) => _geoGoQuery.UpdateAccessDb();
 
-        private async void NextBtn_Click(object sender, EventArgs e) => await ExecuteQuery();
+        private async void NextBtn_Click(object sender, EventArgs e)
+        {
+            if (!_geoGoQuery.DbUpdated)
+            {
+                DialogResult selectionOk = MessageBox.Show("Current result have not been saved to the database, would you like to do so now?", "Current Results Not Saved", MessageBoxButtons.OKCancel);
+                if (selectionOk == DialogResult.OK) _geoGoQuery.UpdateAccessDb();
+            }
+            await ExecuteQuery();
+        }
 
-        private void Preview_Click(object sender, EventArgs e) => Process.Start(@db);
+        private void Preview_Click(object sender, EventArgs e) => Process.Start(_db);
     }
 }
