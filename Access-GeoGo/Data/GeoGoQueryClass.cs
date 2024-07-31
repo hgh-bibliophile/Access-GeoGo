@@ -33,9 +33,15 @@ namespace Access_GeoGo.Data
         private string _conStr;
 
         /// <summary>
+        /// Cancellation Token Source
+        /// </summary>
+        private CancellationTokenSource _cts;
+
+
+        /// <summary>
         /// Cancellation Token
         /// </summary>
-        private CancellationToken _ct;
+        //private CancellationToken _ct;
 
         /// <summary>
         /// Results <see cref="DataTable"/>, becomes DataSource for <see cref="FuelTransPage.GeoGoDataView"/>
@@ -111,8 +117,12 @@ namespace Access_GeoGo.Data
         /// <summary>
         /// Use new <see cref="CancellationToken"/>
         /// </summary>
-        /// <param name="ct">The <see cref="CancellationToken"/></param>
-        public void UpdateCt(CancellationToken ct) => _geotabApi.UpdateCt(_ct = ct);
+        /// <param name="cts">The <see cref="CancellationTokenSource"/></param>
+        public void UpdateCt(CancellationTokenSource cts)
+        {
+            _cts = cts;
+            _geotabApi.UpdateCt(_cts.Token);
+        }
 
         /*Dispose(bool disposing) executes in two distinct scenarios.
         // If disposing equals true, the method has been called directly
@@ -158,11 +168,12 @@ namespace Access_GeoGo.Data
         /// </summary>
         /// <param name="geoGoPage"><see cref="FuelTransPage"/> instanced, assigned to <see cref="_ggp"/> & contains <see cref="_dbp"/></param>
         /// <param name="ct">Cancellation Token, assigned to <see cref="_ct"/></param>
-        public GeoGoQuery(FuelTransPage geoGoPage, CancellationToken ct)
+        public GeoGoQuery(FuelTransPage geoGoPage, CancellationTokenSource cts)
         {
             _ggp = geoGoPage;
             _dbp = geoGoPage.Dbp;
-            _geotabApi = new GeotabApi(_ct = ct);
+            _cts = cts;
+            _geotabApi = new GeotabApi(_cts.Token);
             _conStr = "Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + _dbp.File + "; Persist Security Info = False";
         }
 
@@ -182,7 +193,7 @@ namespace Access_GeoGo.Data
                 await GetApiResults();
                 await GetGeoGoTable();
 
-                if (_ct.IsCancellationRequested)
+                if (_cts.Token.IsCancellationRequested)
                 {
                     Dispose();
                     return;
@@ -234,7 +245,7 @@ namespace Access_GeoGo.Data
         /// <param name="stat">New <see cref="FuelTransPage.QueryLoadingLabel"/> status message</param>
         private Task UpdateProgress(int val, string stat = "Loading...")
         {
-            if (_ct.IsCancellationRequested) return Task.CompletedTask;
+            if (_cts.Token.IsCancellationRequested) return Task.CompletedTask;
             decimal percentage = Convert.ToDecimal(val) / 100;
             decimal value = Math.Round(Convert.ToDecimal(_ggp.QueryLoadingBar.Maximum) * percentage);
             if (value != 0 && value < _ggp.QueryLoadingBar.Value) return Task.CompletedTask;
@@ -248,7 +259,7 @@ namespace Access_GeoGo.Data
         /// </summary>
         private async Task PrepUiPage()
         {
-            _ct.ThrowIfCancellationRequested();
+            _cts.Token.ThrowIfCancellationRequested();
             if (_geoGoTable is null) _geoGoTable = new DataTable();
             else
             {
@@ -265,7 +276,12 @@ namespace Access_GeoGo.Data
         private async Task GetDeviceCache()
         {
             if (_deviceCache == null) _deviceCache = await _geotabApi.GetDictionary<Device, Id>(d => d.Id);
-            if (_deviceNameCache == null) _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
+            if (_deviceCache.Count != _deviceCache.Select(d => d.Value.Name).Distinct().Count())
+            {
+                MessageBox.Show("Duplicate Device Names"); // Cancel the program.
+                _cts.Cancel();
+            }
+            else if (_deviceNameCache == null) _deviceNameCache = _deviceCache.ToDictionary(d => d.Value.Name, d => d.Key);
             await UpdateProgress(40);
         }
 
@@ -277,7 +293,7 @@ namespace Access_GeoGo.Data
 
         private async Task GetDbEntries()
         {
-            _ct.ThrowIfCancellationRequested();
+            _cts.Token.ThrowIfCancellationRequested();
             DataTable accessDt = new DataTable();
             OleDbConnection con = new OleDbConnection(_conStr);
             string query = $"SELECT TOP {_dbp.Limit} * FROM [{_dbp.Table}] WHERE [{_dbp.GtStatus}] = '{_dbp.GtsValue}';";
@@ -303,7 +319,7 @@ namespace Access_GeoGo.Data
 
         private async Task GetDeviceEntryList()
         {
-            _ct.ThrowIfCancellationRequested();
+            _cts.Token.ThrowIfCancellationRequested();
             _deviceEntriesList = new List<DeviceEntry>();
             _deviceErrorList = new List<DbEntry>();
             string id = _dbp.Id;
@@ -330,7 +346,7 @@ namespace Access_GeoGo.Data
 
         private async Task GetCallsList()
         {
-            if (_ct.IsCancellationRequested) return;
+            if (_cts.Token.IsCancellationRequested) return;
             _odometerCalls = new GeotabApi.MultiCallList<StatusData>();
             _engineHoursCalls = new GeotabApi.MultiCallList<StatusData>();
             _locationCalls = new GeotabApi.MultiCallList<LogRecord>();
@@ -393,7 +409,7 @@ namespace Access_GeoGo.Data
         private async Task GetApiResults()
         {
             await Task.WhenAll(_odometerCalls.Execute(), _engineHoursCalls.Execute(), _locationCalls.Execute(), _driverCalls.Execute());
-            if (_ct.IsCancellationRequested) return;
+            if (_cts.Token.IsCancellationRequested) return;
             List<StatusData> oCallResults = _odometerCalls.GetResults();
             List<StatusData> eHoursCallResults = _engineHoursCalls.GetResults();
             List<LogRecord> lCallResults = _locationCalls.GetResults();
@@ -424,7 +440,7 @@ namespace Access_GeoGo.Data
 
         private async Task GetGeoGoTable()
         {
-            if (_ct.IsCancellationRequested) return;
+            if (_cts.Token.IsCancellationRequested) return;
             DataTable dt = new DataTable();
             dt.Columns.Add("Entry ID");
             dt.Columns.Add("Geotab Status");
@@ -473,7 +489,7 @@ namespace Access_GeoGo.Data
 
         public void UpdateAccessDb()
         {
-            if (_ct.IsCancellationRequested) return;
+            if (_cts.Token.IsCancellationRequested) return;
             DataTable dt = _geoGoTable;
             OleDbConnection con = new OleDbConnection(_conStr);
             using (con)

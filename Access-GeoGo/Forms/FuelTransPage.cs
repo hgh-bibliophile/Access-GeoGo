@@ -35,11 +35,14 @@ namespace Access_GeoGo.Forms
             {
                 try
                 {
-                    if (_geoGoQuery == null) _geoGoQuery = new GeoGoQuery(this, _ct.Token);
-                    else _geoGoQuery.UpdateCt(_ct.Token);
+                    if (_geoGoQuery == null) _geoGoQuery = new GeoGoQuery(this, _ct);
+                    else _geoGoQuery.UpdateCt(_ct);
                     await _geoGoQuery.GeoGoQueryAsync();
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                    Close();
+                }
                 catch (Exception err)
                 {
                     Program.ShowError(err);

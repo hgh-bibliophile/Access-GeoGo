@@ -116,9 +116,10 @@
             this.VersionLabel.Font = new System.Drawing.Font("Century Gothic", 7F);
             this.VersionLabel.Location = new System.Drawing.Point(11, 267);
             this.VersionLabel.Name = "VersionLabel";
-            this.VersionLabel.Size = new System.Drawing.Size(168, 15);
+            this.VersionLabel.Size = new System.Drawing.Size(52, 15);
             this.VersionLabel.TabIndex = 14;
-            this.VersionLabel.Text = "GeoGo Version: 4.0 | © 10.2021";
+            this.VersionLabel.Text = "v{0} | {1}";
+            this.VersionLabel.Click += new System.EventHandler(this.VersionLabel_Click);
             // 
             // FaultCodesBtn
             // 
@@ -155,6 +156,7 @@
             this.MinimumSize = new System.Drawing.Size(203, 330);
             this.Name = "MenuPage";
             this.Text = "Menu";
+            this.Load += new System.EventHandler(this.MenuPage_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

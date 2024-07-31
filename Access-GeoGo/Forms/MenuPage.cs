@@ -1,5 +1,8 @@
 ﻿using Geotab.Checkmate;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace Access_GeoGo.Forms
@@ -43,6 +46,17 @@ namespace Access_GeoGo.Forms
         {
             if (!Program.CheckAuth()) return;
             new DbParamsPage().Show();
+        }
+
+        private void MenuPage_Load(object sender, EventArgs e)
+        {
+            //set version info
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            VersionLabel.Text = string.Format(VersionLabel.Text, versionInfo.ProductVersion, versionInfo.LegalCopyright);
+        }
+
+        private void VersionLabel_Click(object sender, EventArgs e)
+        {
         }
     }
 }
